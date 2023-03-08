@@ -2,14 +2,14 @@ import math
 import time
 import cv2
 import numpy as np
-import calibImg
+import calib_img
 
 balllower = np.array([5,200,180])
 ballupper = np.array([25,255,255])
 BallSizeTH = 10
 
 def main():
-    frame = calibImg.main() #キャリブレーション後の画像を読み込む
+    frame = calib_img.main() #キャリブレーション後の画像を読み込む
     resultimg = frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
     frame_mask = cv2.inRange(hsv, balllower, ballupper)
