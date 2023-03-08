@@ -26,49 +26,43 @@ while True:
     if angle != 0:
         if angle <= -angleTH:
             print("turn: ", angle)
-            #turn.main(angle)
+            turn.main(angle)
         elif angle >= angleTH:
             print("turn: ", angle)
-            #turn.main(angle)
+            turn.main(angle)
             
     if xcog == 0:
         while True:
             print("WalkLeft: ", 50)
             BodyAngle = get_body_angle.main()
-            if BodyAngle[0] > 0:
-                g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
-                g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
-            else:
-                g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
-                g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
-            #walk_sideway.main(-(100-xcog))
+            walk_sideway.main(-(100-xcog))
             resultimg, angle, xcog, ycog = detect_edge.main()
             if xcog != 0:
                 break
         
     if xcog < 10:
         print("WalkLeft: ", -(50-xcog))
-        if BodyAngle[0] > 0:
-            g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
-            g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
-        else:
-            g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
-            g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
-        #walk_sideway.main(-(100-xcog))
+        # if BodyAngle[0] > 0:
+        #     g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
+        #     g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
+        # else:
+        #     g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
+        #     g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
+        walk_sideway.main(-(100-xcog))
     elif xcog > 50:
         print("WalkRight: ", xcog-50)
-        if BodyAngle[0] > 0:
-            g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
-            g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(-1)
-        else:
-            g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
-            g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(-1)
+        # if BodyAngle[0] > 0:
+        #     g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
+        #     g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(-1)
+        # else:
+        #     g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
+        #     g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(-1)
             
-        #walk_sideway.main(xcog-100)
+        walk_sideway.main(xcog-100)
     else:
         print("WalkForward")
         g.X = g.X + math.sin(math.radians(BodyAngle[0]))*(1)
         g.Y = g.Y + math.cos(math.radians(BodyAngle[0]))*(1)
-        #walk_forward_2.main()
+        walk_forward_2.main()
         
     print(g.X, g.Y)
