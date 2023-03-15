@@ -52,7 +52,7 @@ def main():
                 
                 try:
                     a = (y2-y1)/(x2-x1)
-                    b = y1-a*x1
+                    b = y1 - a*x1
                 except:
                     a = 0
                     
@@ -87,19 +87,24 @@ def main():
                 (0, 0, 255), thickness=2, lineType=cv2.LINE_4 ) #見えている線の合成の描画
             
             angle = math.atan(-(y2total-y1total)/(x2total-x1total))*180/3.14
+            
             if angle < 0:
                 angle = -(angle + 90)
             else:
                 angle = -(angle - 90)
-            b = y1total - a*x1total
+            
+            a = (y2total-y1total)/(x2total-x1total)
+            b = y1total/(len(Lines)) - a*x1total/(len(Lines))         
+            
 
         except:
             a = 0
+            b = 0
             #print("No line detected by hough")
         
         
-        return resultimg, angle, xcog, ycog
+        return a, b
     
     else:
         #print("No line")
-        return resultimg, 0, 0, 0
+        return 0, 0
