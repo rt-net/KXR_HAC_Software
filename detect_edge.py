@@ -4,9 +4,9 @@ import cv2
 import numpy as np
 import calib_img
 
-LineareaTH = 1000 #エッジの存在判定用エッジ色の画素数閾値
-fieldlower = np.array([165,50,50]) #エッジ色の下閾値
-fieldupper = np.array([180,255,255]) #エッジ色の上閾値
+LineareaTH = 1000
+fieldlower = np.array([165,50,50])
+fieldupper = np.array([180,255,255])
 
 def main():
     frame = calib_img.main() #キャリブレーション後の画像を読み込む
@@ -20,16 +20,16 @@ def main():
 
     Linearea = cv2.countNonZero(Blur) #線の面積を得る
     
-    angle = 0 #変数angleの初期値
+    angle = 0
     
-    if Linearea > LineareaTH: #エッジが存在する場合
+    if Linearea > LineareaTH:
 
         xcog,ycog= int(Linecog["m10"]/Linecog["m00"]) , int(Linecog["m01"]/Linecog["m00"]) #線の重心座標を代入
         cv2.circle(resultimg, (xcog,ycog), 4, 100, 2, 4) #重心を円で示す
 
         fieldedges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
         kernel = np.ones((2,2),np.uint8) #膨張フィルタ
-        dilation = cv2.dilate(fieldedges,kernel,iterations = 1) #エッジ膨張処理
+        dilation = cv2.dilate(fieldedges,kernel,iterations = 1) #膨張
 
         Lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
         line_length = 1000 #描画する線の長さ
@@ -37,10 +37,10 @@ def main():
         x1total, x2total, y1total, y2total = 0, 0, 0, 0 #線のパラメータの平均を得るための合計値の初期値
         
         try:
-            for line in Lines: #Linesにはハフ変換で取得できた複数の線のパラメータが格納　それらについて繰り返し
-                rho = line[0][0] #パラメータ1
-                theta = line[0][1] #パラメータ2
-                a = math.cos(theta) 
+            for line in Lines:
+                rho = line[0][0]
+                theta = line[0][1]
+                a = math.cos(theta)
                 b = math.sin(theta)
                 x0 = a * rho
                 y0 = b * rho
@@ -98,10 +98,14 @@ def main():
         
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         return frame_mask, angle, xcog, ycog #エッジ検出後画像、エッジ角度、エッジ重心X、エッジ重心Yを返す
 =======
         return resultimg, angle, xcog, ycog
 >>>>>>> parent of 78a1441 (delete pycache)
+=======
+        return frame_mask, angle, xcog, ycog
+>>>>>>> parent of 34f221b (added gitignore)
     
     else:
         #print("No line")
