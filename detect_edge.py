@@ -52,7 +52,6 @@ def main():
                 
                 try:
                     a = (y2-y1)/(x2-x1)
-                    b = y1-a*x1
                 except:
                     a = 0
                     
