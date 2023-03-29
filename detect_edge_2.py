@@ -4,9 +4,9 @@ import cv2
 import numpy as np
 import calib_img
 
-LineareaTH = 1000
-fieldlower = np.array([165,50,50])
-fieldupper = np.array([180,255,255])
+LineareaTH = 1000 #エッジの存在判定用エッジ色の画素数閾値
+fieldlower = np.array([165,50,50]) #エッジ色の下閾値
+fieldupper = np.array([180,255,255]) #エッジ色の上閾値
 
 def main():
     frame = calib_img.main() #キャリブレーション後の画像を読み込む
@@ -93,18 +93,18 @@ def main():
             else:
                 angle = -(angle - 90)
             
-            a = (y2total-y1total)/(x2total-x1total)
-            b = y1total/(len(Lines)) - a*x1total/(len(Lines))         
+            a = (y2total-y1total)/(x2total-x1total) #傾きを導出
+            b = y1total/(len(Lines)) - a*x1total/(len(Lines)) #切片を導出
             
 
-        except:
-            a = 0
-            b = 0
+        except: #エッジが検出されなかったとき
+            a = 0 
+            b = 0 #a、bどちらも0を代入
             #print("No line detected by hough")
         
         
-        return a, b
+        return resultimg, a, b #エッジ角度、エッジ切片を返す
     
-    else:
+    else: #エッジの色が存在しない時
         #print("No line")
-        return 0, 0
+        return resultimg, 0, 0 #0を返す
