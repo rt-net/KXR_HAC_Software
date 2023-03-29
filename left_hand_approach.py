@@ -10,7 +10,6 @@ import walk_sideway
 import get_body_angle
 import math
 
-
 delay = 1
 angleTH = 10
 g.framex = 345
