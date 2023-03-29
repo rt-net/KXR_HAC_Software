@@ -43,6 +43,20 @@ while True:
             BodyAngle = get_body_angle.main()
             walk_sideway.main(-20)
             turn.main(-20)
+=======
+            if BodyAngle[0] > 0:
+                g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(1)
+                g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
+            else:
+                g.X = g.X + math.cos(math.radians(BodyAngle[0]))*(-1)
+                g.Y = g.Y + math.sin(math.radians(BodyAngle[0]))*(1)
+            #walk_sideway.main(-(100-xcog))
+>>>>>>> parent of 4efc8e2 (横移動の自己位置推定を追加)
+=======
+            walk_sideway.main(-(100-xcog))
+>>>>>>> parent of 13220ee (前進の自己位置推定の追加)
+=======
+>>>>>>> parent of ea613d4 (pycacheの削除)
             resultimg, angle, xcog, ycog = detect_edge.main()
             if xcog != 0:
                 break
