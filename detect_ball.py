@@ -27,4 +27,3 @@ def main():
     else:
         ball = False
         return area, 0, 0
-        
