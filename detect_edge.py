@@ -84,7 +84,7 @@ def main():
                 resultimg, 
                 (int(x1total/len(Lines)), int(y1total/len(Lines))), 
                 (int(x2total/len(Lines)), int(y2total/len(Lines))), 
-                (0, 255, 255), thickness=2, lineType=cv2.LINE_4 ) #見えている線の合成の描画
+                (0, 0, 255), thickness=2, lineType=cv2.LINE_4 ) #見えている線の合成の描画
             
             angle = math.atan(-(y2total-y1total)/(x2total-x1total))*180/3.14
             if angle < 0:
@@ -98,7 +98,7 @@ def main():
             #print("No line detected by hough")
         
         
-        return frame_mask, angle, xcog, ycog
+        return resultimg, angle, xcog, ycog
     
     else:
         #print("No line")

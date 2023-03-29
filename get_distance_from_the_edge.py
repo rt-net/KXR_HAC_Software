@@ -9,7 +9,7 @@ def main(slope, integer):
     framey = g.framey #画角の大きさ
 
     turnoriginx = framex/2 #ロボット回転中心の画角内での位置
-    turnoriginy = framey + 100 #ロボット回転中心の画角内での位置
+    turnoriginy = framey + 10 #ロボット回転中心の画角内での位置
 
     xdash = (framey - integer)/slope
     ydash = slope*(framex/2)+integer
