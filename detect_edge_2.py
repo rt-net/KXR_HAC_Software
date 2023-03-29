@@ -20,16 +20,16 @@ def main():
 
     Linearea = cv2.countNonZero(Blur) #線の面積を得る
     
-    angle = 0 #変数angleの初期値
+    angle = 0
     
-    if Linearea > LineareaTH: #エッジが存在する場合
+    if Linearea > LineareaTH:
 
         xcog,ycog= int(Linecog["m10"]/Linecog["m00"]) , int(Linecog["m01"]/Linecog["m00"]) #線の重心座標を代入
         cv2.circle(resultimg, (xcog,ycog), 4, 100, 2, 4) #重心を円で示す
 
         fieldedges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
         kernel = np.ones((2,2),np.uint8) #膨張フィルタ
-        dilation = cv2.dilate(fieldedges,kernel,iterations = 1) #エッジ膨張処理
+        dilation = cv2.dilate(fieldedges,kernel,iterations = 1) #膨張
 
         Lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
         line_length = 1000 #描画する線の長さ
@@ -37,10 +37,10 @@ def main():
         x1total, x2total, y1total, y2total = 0, 0, 0, 0 #線のパラメータの平均を得るための合計値の初期値
         
         try:
-            for line in Lines: #Linesにはハフ変換で取得できた複数の線のパラメータが格納　それらについて繰り返し
-                rho = line[0][0] #パラメータ1
-                theta = line[0][1] #パラメータ2
-                a = math.cos(theta) 
+            for line in Lines:
+                rho = line[0][0]
+                theta = line[0][1]
+                a = math.cos(theta)
                 b = math.sin(theta)
                 x0 = a * rho
                 y0 = b * rho
@@ -52,7 +52,7 @@ def main():
                 
                 try:
                     a = (y2-y1)/(x2-x1)
-                    b = y1-a*x1
+                    b = y1 - a*x1
                 except:
                     a = 0
                     
@@ -84,22 +84,27 @@ def main():
                 resultimg, 
                 (int(x1total/len(Lines)), int(y1total/len(Lines))), 
                 (int(x2total/len(Lines)), int(y2total/len(Lines))), 
-                (0, 255, 255), thickness=2, lineType=cv2.LINE_4 ) #見えている線の合成の描画
+                (0, 0, 255), thickness=2, lineType=cv2.LINE_4 ) #見えている線の合成の描画
             
             angle = math.atan(-(y2total-y1total)/(x2total-x1total))*180/3.14
+            
             if angle < 0:
-                angle = -(angle + 90)
+                angle = -(angle + 90)+0
             else:
                 angle = -(angle - 90)
-            b = y1total - a*x1total
+            
+            a = (y2total-y1total)/(x2total-x1total) #傾きを導出
+            b = y1total/(len(Lines)) - a*x1total/(len(Lines)) #切片を導出
+            
 
-        except:
-            a = 0
+        except: #エッジが検出されなかったとき
+            a = 0 
+            b = 0 #a、bどちらも0を代入
             #print("No line detected by hough")
         
         
-        return frame_mask, angle, xcog, ycog #エッジ検出後画像、エッジ角度、エッジ重心X、エッジ重心Yを返す
+        return resultimg, a, b #エッジ角度、エッジ切片を返す
     
-    else:
+    else: #エッジの色が存在しない時
         #print("No line")
-        return resultimg, 0, 0, 0
+        return resultimg, 0, 0 #0を返す
