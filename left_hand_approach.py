@@ -20,15 +20,9 @@ g.Y = 0
 
 while True:
     resultimg, angle, xcog, ycog = detect_edge.main()
-    
-    cv2.imshow("test", resultimg)
-    
-    if cv2.waitKey(delay) & 0xFF == ord('q'):
-        break
     BodyAngle = get_body_angle.main()
     
     print(BodyAngle)
-    
     if angle != 0:
         if angle <= -angleTH:
             print("turn: ", angle)
@@ -42,7 +36,6 @@ while True:
             print("WalkLeft: ", 50)
             BodyAngle = get_body_angle.main()
             walk_sideway.main(-20)
-            turn.main(-20)
             resultimg, angle, xcog, ycog = detect_edge.main()
             if xcog != 0:
                 break
