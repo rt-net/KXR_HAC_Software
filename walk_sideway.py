@@ -39,7 +39,6 @@ def main(walkDist): #メイン関数　引数は移動量
                 
         else: #移動量が正の時(右へ移動の時)
             while i < stepCount: #定められた歩行回数まで繰り返し
-                BodyAngle = get_body_angle.main() #自己姿勢を読み込む
                 rcb4.motionPlay(4)     #モーション番号4(右横移動)を再生
                 BodyAngle = get_body_angle.main()
                 if BodyAngle[0] > 0: #Yaw軸周りの角度が正の時
