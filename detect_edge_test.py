@@ -11,14 +11,11 @@ g.framex = 345
 g.framey = 395
 
 while True:
-    resultimg, a,b = detect_edge_2.main()
+    a,b = detect_edge_2.main()
     
-    #resultimg, x, y, z = detect_edge.main()
-    
-    print("-------------")
+    resultimg, x, y, z = detect_edge.main()
 
-    print("傾き", a)
-    print("切片", b)
+    print(a, b)
     
     cv2.imshow("frame", resultimg)
     
@@ -27,7 +24,5 @@ while True:
     
     if a != 0:
         dist = get_distance_from_the_edge.main(a, b)
-        print("距離", dist)
-    
-    print("-------------")    
+        print(dist)
 
