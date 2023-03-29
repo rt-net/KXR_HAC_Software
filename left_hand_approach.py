@@ -20,15 +20,9 @@ g.Y = 0
 
 while True:
     resultimg, angle, xcog, ycog = detect_edge.main()
-    
-    cv2.imshow("test", resultimg)
-    
-    if cv2.waitKey(delay) & 0xFF == ord('q'):
-        break
     BodyAngle = get_body_angle.main()
     
     print(BodyAngle)
-    
     if angle != 0:
         if angle <= -angleTH:
             print("turn: ", angle)
@@ -44,6 +38,7 @@ while True:
 <<<<<<< HEAD
 <<<<<<< HEAD
             walk_sideway.main(-20)
+<<<<<<< HEAD
             turn.main(-20)
 =======
             if BodyAngle[0] > 0:
@@ -57,6 +52,8 @@ while True:
 =======
             walk_sideway.main(-(100-xcog))
 >>>>>>> parent of 13220ee (前進の自己位置推定の追加)
+=======
+>>>>>>> parent of ea613d4 (pycacheの削除)
             resultimg, angle, xcog, ycog = detect_edge.main()
             if xcog != 0:
                 break
