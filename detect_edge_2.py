@@ -89,7 +89,7 @@ def main():
             angle = math.atan(-(y2total-y1total)/(x2total-x1total))*180/3.14
             
             if angle < 0:
-                angle = -(angle + 90)
+                angle = -(angle + 90)+0
             else:
                 angle = -(angle - 90)
             
