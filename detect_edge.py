@@ -2,14 +2,14 @@ import math
 import time
 import cv2
 import numpy as np
-import calib_img
+import calibImg
 
 LineareaTH = 1000
 fieldlower = np.array([165,50,50])
 fieldupper = np.array([180,255,255])
 
 def main():
-    frame = calib_img.main() #キャリブレーション後の画像を読み込む
+    frame = calibImg.main() #キャリブレーション後の画像を読み込む
     resultimg = frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
     frame_mask = cv2.inRange(hsv, fieldlower, fieldupper)   #エッジ赤線以外をマスク
