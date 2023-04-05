@@ -76,6 +76,8 @@ class VisionLibrary:
         Linearea = cv2.countNonZero(Blur) #線の面積を得る
         
         angle = 0 #エッジ角度の初期値
+        self.edgea = 0 
+        self.edgeb = 0 #a、bどちらも0を初期値
         
         #見えるエッジの面積がエッジ 存在判定の閾値を超えた時       
         if Linearea > p.LineareaTH:
@@ -237,6 +239,10 @@ class VisionLibrary:
     def detect_corner(self): #コーナー検出の関数
         frame = self.calib_img() #キャリブレーション後画像の読み込み
         #self.resultimg = frame #結果表示用画像の作成
+        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame = cv2.inRange(hsv, p.fieldlower, p.fieldupper)   #エッジ赤線をマスク
         
         # 処理対象画像に対して、テンプレート画像との類似度を算出する
         matchleft = cv2.matchTemplate(frame, p.fieldcornerleft, cv2.TM_CCOEFF_NORMED)
@@ -272,26 +278,27 @@ class VisionLibrary:
         return self.cornertype, self.cornerx, self.cornery
         
         
-    def disp_resultimg(self):
+    def disp_resultimg(self):#結果画像の表示用関数
         result = self.calib_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         
         try: #エッジが存在しない時は実行されない
             #見えている線の合成の描画
-            if self.xcog != 0 or self.ycog != 0:
-                cv2.line(result, 
-                        (self.x1avg, self.y1avg), 
-                        (self.x2avg, self.y2avg), 
-                        (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
-                
-                # 線の角度(度)の画像への書き込み
-                cv2.putText(result,
-                    text=str(self.angle),
-                    org=(self.xcog+10, self.ycog+30),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.6,
-                    color=(0, 255, 0),
-                    thickness=2,
-                    lineType=cv2.LINE_4)
+            if self.cornertype == 0:
+                if self.xcog != 0 or self.ycog !=0:
+                    cv2.line(result, 
+                            (self.x1avg, self.y1avg), 
+                            (self.x2avg, self.y2avg), 
+                            (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
+                    
+                    # 線の角度(度)の画像への書き込み
+                    cv2.putText(result,
+                        text=str(self.angle),
+                        org=(self.xcog+10, self.ycog+30),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)
         
         except:
             print("No Line")
@@ -324,7 +331,7 @@ class VisionLibrary:
         try: #コーナーが存在しないときは実行されない
             #コーナーの描画
             if self.cornertype != 0:
-                cv2.rectangle(result, (int(self.cornerx), int(self.cornery)), (int(self.cornerx)+p.w, int(self.cornery)+p.h), (0, 255, 0), 2)
+                cv2.rectangle(result, (int(self.cornerx), int(self.cornery)), (int(self.cornerx)+p.w, int(self.cornery)+p.h), (255, 255, 0), 2)
                 
             if self.cornertype == 1:
                 cv2.putText(result,
@@ -359,7 +366,5 @@ class VisionLibrary:
         except:
             print("No Corner")
             
-        
-        
         return result
         

@@ -19,7 +19,7 @@ while True:
     # cv2.imshow("frame3", corner)
     
     resultimg = VISION.disp_resultimg()
-    
+    #print(linea, lineb)
     cv2.imshow("frame3", resultimg)
     
     

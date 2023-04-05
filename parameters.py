@@ -41,12 +41,16 @@ h, w = 66,66 #コーナー部のサイズ(mm)
 #コーナーのパターンマッチ元画像の読み込み
 fieldcornerleft = cv2.imread("fieldcornerleft.jpg")
 fieldcornerleft = cv2.resize(fieldcornerleft, (h, w))
+fieldcornerleft = cv2.cvtColor(fieldcornerleft, cv2.COLOR_BGR2GRAY)
 fieldcornerright = cv2.imread("fieldcornerright.jpg")
 fieldcornerright = cv2.resize(fieldcornerright, (h, w))
+fieldcornerright = cv2.cvtColor(fieldcornerright, cv2.COLOR_BGR2GRAY)
 fieldinnercornerleft = cv2.imread("fieldinnercornerleft.png")
 fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (h, w))
+fieldinnercornerleft = cv2.cvtColor(fieldinnercornerleft, cv2.COLOR_BGR2GRAY)
 
+patternmatchTH = 0.75 #パターンマッチの閾値
 #--------------------------------------------------------------
 
 ksize = 3 #ぼかしフィルターサイズ
-patternmatchTH = 0.8 #パターンマッチの閾値
+
