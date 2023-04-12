@@ -113,7 +113,6 @@ class VisionLibrary:
                     
                     try:
                         a = (y2-y1)/(x2-x1)
-                        b = y1 - a*x1
                     except:
                         a = 0
                         
@@ -151,7 +150,7 @@ class VisionLibrary:
                     self.angle = -(self.angle - 90)
                     
                 self.edgea = (y2total-y1total)/(x2total-x1total) #傾きを導出
-                self.edgeb = y1total/(len(Lines)) - a*x1total/(len(Lines)) #切片を導出
+                self.edgeb = y1total/(len(Lines)) - self.edgea*x1total/(len(Lines)) #切片を導出
                 
                 
                 #-------------------------------------------------------------------
@@ -181,16 +180,18 @@ class VisionLibrary:
             except: #エッジが検出されなかったとき
                 self.edgea = 0 
                 self.edgeb = 0 #a、bどちらも0を代入    
+                self.angle = 0
                         
             #return self.resultimg, self.edgea, self.edgeb #エッジ角度、エッジ切片を返す
     
         else: #エッジの色が存在しない時
             self.edgea = 0 
             self.edgeb = 0 #a、bどちらも0を代入 
+            self.angle = 0
         
             #return self.resultimg, self.edgea, self.edgeb #エッジ角度、エッジ切片を返す
             
-        return self.edgea, self.edgeb #エッジ角度、エッジ切片を返す
+        return self.edgea, self.edgeb, self.angle #エッジ角度、エッジ切片を返す
     
     def detect_ball(self): #ボール検出の関数
         frame = self.calib_img() #キャリブレーション後画像の読み込み
@@ -249,12 +250,12 @@ class VisionLibrary:
         # 処理対象画像の各画素に対して、テンプレート画像との類似度を算出する
         matchleft = cv2.matchTemplate(frame, p.fieldcornerleft, cv2.TM_CCOEFF_NORMED)
         matchright = cv2.matchTemplate(frame, p.fieldcornerright, cv2.TM_CCOEFF_NORMED)
-        matchinnerleft = cv2.matchTemplate(frame, p.fieldinnercornerleft, cv2.TM_CCOEFF_NORMED)
+        # matchinnerleft = cv2.matchTemplate(frame, p.fieldinnercornerleft, cv2.TM_CCOEFF_NORMED)
 
         # 閾値に基づき類似度の高い画素を得る　値はlist
         matchfindleft = np.where(matchleft >= p.patternmatchTH)
         matchfindright = np.where(matchright >= p.patternmatchTH)
-        matchfindinnerleft = np.where(matchinnerleft >= p.patternmatchTH)
+        # matchfindinnerleft = np.where(matchinnerleft >= p.patternmatchTH)
     
         if len(matchfindleft[0]) != 0: #左コーナーが検出されているとき
             self.cornery = sum(matchfindleft[0])/len(matchfindleft[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
@@ -267,10 +268,10 @@ class VisionLibrary:
             self.cornertype = 2 #コーナー種別を2に設定
             
         
-        elif len(matchfindinnerleft[0]) != 0: #左コーナー(内)が検出されているとき
-            self.cornery = sum(matchfindinnerleft[0])/len(matchfindinnerleft[0])
-            self.cornerx = sum(matchfindinnerleft[1])/len(matchfindinnerleft[1])
-            self.cornertype = 3
+        # elif len(matchfindinnerleft[0]) != 0: #左コーナー(内)が検出されているとき
+        #     self.cornery = sum(matchfindinnerleft[0])/len(matchfindinnerleft[0])
+        #     self.cornerx = sum(matchfindinnerleft[1])/len(matchfindinnerleft[1])
+        #     self.cornertype = 3
 
         else: #何も検出されなかったとき
             #座標、コーナー種別を0に設定
@@ -359,15 +360,15 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
 
-            elif self.cornertype == 3:
-                cv2.putText(result,
-                            text="Left Inner",
-                            org=(int(self.cornerx+10), int(self.cornery+30)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
+            # elif self.cornertype == 3:
+            #     cv2.putText(result,
+            #                 text="Left Inner",
+            #                 org=(int(self.cornerx+10), int(self.cornery+30)),
+            #                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            #                 fontScale=0.6,
+            #                 color=(0, 255, 0),
+            #                 thickness=2,
+            #                 lineType=cv2.LINE_4)
             
         except:
             print("No Corner")

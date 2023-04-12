@@ -50,13 +50,13 @@ fieldcornerright = cv2.resize(fieldcornerright, (h, w))
 fieldcornerright = cv2.cvtColor(fieldcornerright, cv2.COLOR_BGR2GRAY)
 ret, fieldcornerright = cv2.threshold(fieldcornerright, bwthresh, 255, cv2.THRESH_BINARY)
 
-fieldinnercornerleft = cv2.imread("vision/fieldinnercornerleft.png")
-fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (h, w))
-fieldinnercornerleft = cv2.cvtColor(fieldinnercornerleft, cv2.COLOR_BGR2GRAY)
-ret, fieldinnercornerleft = cv2.threshold(fieldinnercornerleft, bwthresh, 255, cv2.THRESH_BINARY)
+# fieldinnercornerleft = cv2.imread("vision/fieldinnercornerleft.png")
+# fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (h, w))
+# fieldinnercornerleft = cv2.cvtColor(fieldinnercornerleft, cv2.COLOR_BGR2GRAY)
+# ret, fieldinnercornerleft = cv2.threshold(fieldinnercornerleft, bwthresh, 255, cv2.THRESH_BINARY)
 
 
-patternmatchTH = 0.85 #パターンマッチの閾値
+patternmatchTH = 0.8 #パターンマッチの閾値
 #--------------------------------------------------------------
 
 ksize = 3 #ぼかしフィルターサイズ
