@@ -1,5 +1,8 @@
 import numpy as np
 import cv2
+import os
+
+print(os.getcwd())
 #各パラメータの記述ファイル
 
 #動画読み込み時の解像度、FPS指定

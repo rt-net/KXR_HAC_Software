@@ -1,6 +1,6 @@
-from vision_library import VisionLibrary
-
 import cv2
+
+from vision.vision_library import VisionLibrary
 
 delay = 1
 
