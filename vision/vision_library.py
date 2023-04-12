@@ -15,7 +15,7 @@ class VisionLibrary:
             #元の戻り値の動画コーデックvは4バイト　フォーマットの4つの1バイト文字の連結
             #ビットシフトでそれぞれの文字コードを末尾に取り出し、0bFF(11111111)との&演算で文字コードを得る
             
-        print("[初期化中]")
+        print("[カメラ初期化中]")
             
         self.cap = cv2.VideoCapture(0) #デバイス番号を0で指定しインスタンス生成
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) #カメラ画像取得の際のバッファを設定
@@ -41,7 +41,7 @@ class VisionLibrary:
         self.MTX_PATH = TMP_FOLDER_PATH + "mtx.csv" 
         self.DIST_PATH = TMP_FOLDER_PATH + "dist.csv"
         
-        print("[初期化完了]")
+        print("[カメラ初期化完了]")
 
 
     def calib_img(self):
