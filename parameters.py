@@ -49,7 +49,7 @@ fieldinnercornerleft = cv2.imread("fieldinnercornerleft.png")
 fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (h, w))
 fieldinnercornerleft = cv2.cvtColor(fieldinnercornerleft, cv2.COLOR_BGR2GRAY)
 
-patternmatchTH = 0.75 #パターンマッチの閾値
+patternmatchTH = 0.85 #パターンマッチの閾値
 #--------------------------------------------------------------
 
 ksize = 3 #ぼかしフィルターサイズ

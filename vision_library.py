@@ -8,16 +8,18 @@ class VisionLibrary:
        
     def __init__(self): 
         
-        def decode_fourcc(v): 
-            v = int(v)
-            return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)])
+        def decode_fourcc(v): #デコード用関数 動画コーデック(FourCC)はfloatで表現されているためこの関数が必要
+            v = int(v) #intにキャスト(型変換)
+            return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)]) 
+            #動画コーデックをビット演算し連結することでフォーマットを得る
+            #元の戻り値の動画コーデックvは4バイト　フォーマットの4つの1バイト文字の連結
+            #ビットシフトでそれぞれの文字コードを末尾に取り出し、0bFF(11111111)との&演算で文字コードを得る
             
         print("[初期化中]")
             
         self.cap = cv2.VideoCapture(0) #デバイス番号を0で指定しインスタンス生成
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) #カメラ画像取得の際のバッファを設定
-        ret, im = self.cap.read() #カメラ画像を読み込む
-        print(type(self.cap)) #カメラ設定が問題ないか表示
+        print(type(self.cap)) #カメラ画像の取得元クラス表示
         print("カメラ設定正常: ",self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
 
         # フォーマット・解像度・FPSの設定
@@ -28,7 +30,7 @@ class VisionLibrary:
         self.cap.set(cv2.CAP_PROP_FPS, p.camFPS) #FPS指定
 
         # フォーマット・解像度・FPSの取得
-        fourcc = decode_fourcc(self.cap.get(cv2.CAP_PROP_FOURCC)) #フォーマットをデコードしたものを代入
+        fourcc = decode_fourcc(self.cap.get(cv2.CAP_PROP_FOURCC)) #動画コーデックをデコードしたものを代入
         width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) #幅を代入
         height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) #高さを代入
         fps = self.cap.get(cv2.CAP_PROP_FPS) #FPSを代入
@@ -142,9 +144,9 @@ class VisionLibrary:
                 
                 self.angle = int(math.degrees(math.atan(-(y2total-y1total)/(x2total-x1total)))) #角度の計算(度)
 
-                
+                #線の角度について機体前後方向と平行が0度になるように計算
                 if self.angle < 0:
-                    self.angle = -(self.angle + 90)
+                    self.angle = -(self.angle + 90) 
                 else:
                     self.angle = -(self.angle - 90)
                     
@@ -244,25 +246,25 @@ class VisionLibrary:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame = cv2.inRange(hsv, p.fieldlower, p.fieldupper)   #エッジ赤線をマスク
         
-        # 処理対象画像に対して、テンプレート画像との類似度を算出する
+        # 処理対象画像の各画素に対して、テンプレート画像との類似度を算出する
         matchleft = cv2.matchTemplate(frame, p.fieldcornerleft, cv2.TM_CCOEFF_NORMED)
         matchright = cv2.matchTemplate(frame, p.fieldcornerright, cv2.TM_CCOEFF_NORMED)
         matchinnerleft = cv2.matchTemplate(frame, p.fieldinnercornerleft, cv2.TM_CCOEFF_NORMED)
 
-        # 閾値に基づき類似度の高い部分を検出する
+        # 閾値に基づき類似度の高い画素を得る　値はlist
         matchfindleft = np.where(matchleft >= p.patternmatchTH)
         matchfindright = np.where(matchright >= p.patternmatchTH)
         matchfindinnerleft = np.where(matchinnerleft >= p.patternmatchTH)
     
         if len(matchfindleft[0]) != 0: #左コーナーが検出されているとき
-            self.cornery = sum(matchfindleft[0])/len(matchfindleft[0])
-            self.cornerx = sum(matchfindleft[1])/len(matchfindleft[1])            
-            self.cornertype = 1
+            self.cornery = sum(matchfindleft[0])/len(matchfindleft[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.cornerx = sum(matchfindleft[1])/len(matchfindleft[1]) #左コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.cornertype = 1 #コーナー種別を1に設定
         
         elif len(matchfindright[0]) != 0: #右コーナーが検出されているとき
-            self.cornery = sum(matchfindright[0])/len(matchfindright[0])
-            self.cornerx = sum(matchfindright[1])/len(matchfindright[1])
-            self.cornertype = 2
+            self.cornery = sum(matchfindright[0])/len(matchfindright[0]) #右コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.cornerx = sum(matchfindright[1])/len(matchfindright[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.cornertype = 2 #コーナー種別を2に設定
             
         
         elif len(matchfindinnerleft[0]) != 0: #左コーナー(内)が検出されているとき
@@ -270,12 +272,13 @@ class VisionLibrary:
             self.cornerx = sum(matchfindinnerleft[1])/len(matchfindinnerleft[1])
             self.cornertype = 3
 
-        else:
-            self.cornery = 0
+        else: #何も検出されなかったとき
+            #座標、コーナー種別を0に設定
+            self.cornery = 0 
             self.cornerx = 0
             self.cornertype = 0
             
-        return self.cornertype, self.cornerx, self.cornery
+        return self.cornertype, self.cornerx, self.cornery #コーナー座標、種別を返す
         
         
     def disp_resultimg(self):#結果画像の表示用関数
@@ -283,7 +286,7 @@ class VisionLibrary:
         
         try: #エッジが存在しない時は実行されない
             #見えている線の合成の描画
-            if self.cornertype == 0:
+            if self.cornertype == 0: #コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
                 if self.xcog != 0 or self.ycog !=0:
                     cv2.line(result, 
                             (self.x1avg, self.y1avg), 
@@ -331,7 +334,10 @@ class VisionLibrary:
         try: #コーナーが存在しないときは実行されない
             #コーナーの描画
             if self.cornertype != 0:
-                cv2.rectangle(result, (int(self.cornerx), int(self.cornery)), (int(self.cornerx)+p.w, int(self.cornery)+p.h), (255, 255, 0), 2)
+                cv2.rectangle(result, 
+                              (int(self.cornerx), int(self.cornery)), 
+                              (int(self.cornerx)+p.w, int(self.cornery)+p.h), 
+                              (255, 255, 0), 2)
                 
             if self.cornertype == 1:
                 cv2.putText(result,
