@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
-import os
 
-print(os.getcwd())
 #各パラメータの記述ファイル
 
 #動画読み込み時の解像度、FPS指定
@@ -40,17 +38,23 @@ BallSizeTH = 2000 #ボールの存在判定用ボール色の画素数閾値
 #--------------------------------------------------------------
 
 h, w = 66,66 #コーナー部のサイズ(mm)
-
+bwthresh = 30
 #コーナーのパターンマッチ元画像の読み込み
-fieldcornerleft = cv2.imread("fieldcornerleft.jpg")
+fieldcornerleft = cv2.imread("vision/fieldcornerleft.jpg")
 fieldcornerleft = cv2.resize(fieldcornerleft, (h, w))
 fieldcornerleft = cv2.cvtColor(fieldcornerleft, cv2.COLOR_BGR2GRAY)
-fieldcornerright = cv2.imread("fieldcornerright.jpg")
+ret, fieldcornerleft = cv2.threshold(fieldcornerleft, bwthresh, 255, cv2.THRESH_BINARY)
+
+fieldcornerright = cv2.imread("vision/fieldcornerright.jpg")
 fieldcornerright = cv2.resize(fieldcornerright, (h, w))
 fieldcornerright = cv2.cvtColor(fieldcornerright, cv2.COLOR_BGR2GRAY)
-fieldinnercornerleft = cv2.imread("fieldinnercornerleft.png")
+ret, fieldcornerright = cv2.threshold(fieldcornerright, bwthresh, 255, cv2.THRESH_BINARY)
+
+fieldinnercornerleft = cv2.imread("vision/fieldinnercornerleft.png")
 fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (h, w))
 fieldinnercornerleft = cv2.cvtColor(fieldinnercornerleft, cv2.COLOR_BGR2GRAY)
+ret, fieldinnercornerleft = cv2.threshold(fieldinnercornerleft, bwthresh, 255, cv2.THRESH_BINARY)
+
 
 patternmatchTH = 0.85 #パターンマッチの閾値
 #--------------------------------------------------------------
