@@ -11,6 +11,7 @@ while True:
     linea, lineb = VISION.detect_edge()
     ballx, bally = VISION.detect_ball()
     cornertype, cornerx, cornery = VISION.detect_corner()
+
     
     # cv2.imshow("frame", edge)
     

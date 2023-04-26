@@ -85,52 +85,51 @@ class VisionLibrary:
         
         if line_area > vision.parameters.line_area_threshhold:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_graviity["m10"]/line_center_of_graviity["m00"]) , int(line_center_of_graviity["m01"]/line_center_of_graviity["m00"]) #線の重心座標を代入
-            
-            print(self.center_of_gravity_x)
+    
+            #print(self.center_of_gravity_x)
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
             
             kernel = np.ones((2,2),np.uint8) #膨張フィルタ
             dilation = cv2.dilate(field_edges,kernel,iterations = 1) #膨張
             
             lines = []
+            theta_list = []
             lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
             line_length = 1000 #描画する線の長さ
-            x1_average, x2_average, y1_average, y2_average = 0, 0, 0, 0 #線のパラメータの平均を得るための合計値の初期値
-            x1_total, x2_total, y1_total, y2_total = 0, 0, 0, 0
             rho_total = 0
             theta_total = 0
-            i = 0
-            j = 0
-            if type(lines) == np.ndarray:
-                for line in lines: #Hough変換で得た配列Linesについて繰り返す
-                    rho = line[0][0]
-                    theta = line[0][1]
-                                        
-                    a = math.cos(theta)
-                    b = math.sin(theta)
-                    x0 = a * rho
-                    y0 = b * rho
-                    
-                    x1 = (x0 - line_length * b)
-                    x2 = (x0 + line_length * b)
-                    y1 = (y0 + line_length * a)
-                    y2 = (y0 - line_length * a)                    
-                    
-                    print(theta)
-                    if theta > math.pi/2 : #線の傾きが負の時
-                        rho = -rho #その場合でのrhoの符号は-
-                        theta = math.pi-theta #パラメータθを1~pi/2の値に変換
 
-                    theta_total = theta + theta_total
-                    rho_total = rho+rho_total
+            if type(lines) == np.ndarray: #エッジが検出されている時
+                for line in lines: #検出された全ての線のパラメータθについてのリストを作成
+                    theta_list.append(line[0][1])
+                theta_std_dev = np.nanstd(theta_list) #θの標準偏差を得る
+                
+                #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
+                #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
+                if theta_std_dev < 1: #θの標準偏差が1未満である時
+                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
+                        rho = line[0][0]
+                        theta = line[0][1]
+                                            
+                        theta_total = theta_total+theta   
+                        rho_total = rho_total+rho
+                else: #θの標準偏差が1以上の時
+                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
+                        rho = line[0][0]
+                        theta = line[0][1]
+                                            
+                        if theta > math.pi/2 : #線の傾きが負の時
+                            rho = -rho #その場合でのrhoの符号は-
+                            theta = math.pi-theta #パラメータθを1~pi/2の値に変換
+                            theta_total = theta_total-theta
+                        else:
+                            theta_total = theta_total+theta
+                            
+                        rho_total = rho_total+rho
                     
                 rho_average = rho_total/(len(lines))
                 theta_average = theta_total/(len(lines))
-                
-                if i>j: #負の傾きが支配的の時
-                    theta_average = math.pi-theta_average
-                    rho_average = -rho_average
-                                    
+                                                    
                 a = math.cos(theta_average)
                 b = math.sin(theta_average)
                 x0 = a * rho_average
@@ -177,15 +176,15 @@ class VisionLibrary:
         #もしボール画素数が存在判定の閾値を超えていたら
         if area > vision.parameters.ball_size_threshhold:
             ball = True
-            self.ballx,self.bally= int(ballcog["m10"]/ballcog["m00"]) , int(ballcog["m01"]/ballcog["m00"]) #ボールの重心座標を得る
-            #return self.resultimg, self.ballx, self.bally
+            self.ball_x,self.ball_y= int(ballcog["m10"]/ballcog["m00"]) , int(ballcog["m01"]/ballcog["m00"]) #ボールの重心座標を得る
+            #return self.resultimg, self.ball_x, self.ball_y
         else:
             ball = False
-            self.ballx = 0
-            self.bally = 0
-            #return self.resultimg, self.ballx, self.bally
+            self.ball_x = 0
+            self.ball_y = 0
+            #return self.resultimg, self.ball_x, self.ball_y
             
-        return self.ballx, self.bally
+        return self.ball_x, self.ball_y
 
     def detect_corner(self): #コーナー検出の関数
         frame = self.calib_img() #キャリブレーション後画像の読み込み        
@@ -219,7 +218,7 @@ class VisionLibrary:
     def disp_resultimg(self):#結果画像の表示用関数
         result = self.calib_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         
-        try: #エッジが存在しない時は実行されない
+        if self.edge_a != 0 and self.edge_b != 0: #エッジが存在するとき 存在しないときエッジの値はどちらも0
             #見えている線の合成の描画
             if self.corner_type == 0: #コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
                 if True:#self.center_of_gravity_x or self.center_of_gravity_y:
@@ -237,16 +236,14 @@ class VisionLibrary:
                         color=(0, 255, 0),
                         thickness=2,
                         lineType=cv2.LINE_4)
-        except:
-            print("No Line")
-            
-        try: #ボールが存在しない時は実行されない
+
+        if self.ball_x == 0 and self.ball_y == 0:     
             #ボール重心の描画
-            if self.ballx or self.bally:
-                cv2.circle(result, (self.ballx,self.bally), 4, 100, 2, 4) #ボール重心座標にマーク
+            if self.ball_x or self.ball_y:
+                cv2.circle(result, (self.ball_x,self.ball_y), 4, 100, 2, 4) #ボール重心座標にマーク
                 cv2.putText(result,
-                            text=str(self.ballx),
-                            org=(self.ballx+10, self.bally+10),
+                            text=str(self.ball_x),
+                            org=(self.ball_x+10, self.ball_y+10),
                             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                             fontScale=0.6,
                             color=(0, 255, 0),
@@ -254,23 +251,19 @@ class VisionLibrary:
                             lineType=cv2.LINE_4)
 
                 cv2.putText(result,
-                            text=str(self.bally),
-                            org=(self.ballx+10, self.bally+30),
+                            text=str(self.ball_y),
+                            org=(self.ball_x+10, self.ball_y+30),
                             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                             fontScale=0.6,
                             color=(0, 255, 0),
                             thickness=2,
-                            lineType=cv2.LINE_4)
-        except:
-            print("No Ball")
+                            lineType=cv2.LINE_4)            
             
-        try: #コーナーが存在しないときは実行されない
-            #コーナーの描画
-            if self.corner_type:
-                cv2.rectangle(result, 
-                              (int(self.corner_x), int(self.corner_y)), 
-                              (int(self.corner_x)+vision.parameters.w, int(self.corner_y)+vision.parameters.h), 
-                              (255, 255, 0), 2) 
+        if self.corner_type != 0: #コーナーが存在する時 corner_type == 0 の時は存在しない
+            cv2.rectangle(result, 
+                            (int(self.corner_x), int(self.corner_y)), 
+                            (int(self.corner_x)+vision.parameters.corner_width, int(self.corner_y)+vision.parameters.corner_height), 
+                            (255, 255, 0), 2) 
             if self.corner_type == 1:
                 cv2.putText(result,
                             text="Left",
@@ -298,7 +291,5 @@ class VisionLibrary:
                             color=(0, 255, 0),
                             thickness=2,
                             lineType=cv2.LINE_4)
-        except:
-            print("No Corner")
-            
+
         return result
