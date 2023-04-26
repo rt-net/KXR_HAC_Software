@@ -2,7 +2,7 @@ import math
 import time
 import cv2
 import numpy as np
-import calib_img
+import calibImg
 
 
 fieldcornerleft = cv2.imread("fieldcornerleft.jpg")
@@ -13,7 +13,7 @@ fieldinnercornerleft = cv2.imread("fieldinnercornerleft.png")
 fieldinnercornerleft = cv2.resize(fieldinnercornerleft, (66, 66))
 
 def main():
-    frame = calib_img.main() #キャリブレーション後の画像を読み込む
+    frame = calibImg.main() #キャリブレーション後の画像を読み込む
     resultimg = frame
     
     # 処理対象画像に対して、テンプレート画像との類似度を算出する
