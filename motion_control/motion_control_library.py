@@ -1,21 +1,18 @@
 import math
-import time
-import cv2
 import numpy as np
-import motion_control.parameters as p
+import motion_control.parameters.
 import adafruit_bno055
 import board
 import time
-
 
 class MotionLibrary:
     X = 0
     Y = 0
     angle = 0
     
-    yaworigin = 0
-    pitchorigin = 0
-    rollorigin = 0
+    yaw_origin = 0
+    pitch_origin = 0
+    roll_origin = 0
     
     def __init__(self): 
         print("\n[RCB4初期化中]")
@@ -40,117 +37,103 @@ class MotionLibrary:
         
     def IMU_calib(self): #任意でIMUのキャリブレーションを行う関数
         try:
-            self.yaworigin = self.sensor.euler[0] 
-            if self.yaworigin > 180:
-                self.yaworigin = (self.yaworigin-180)-180
-            self.pitchorigin = self.sensor.euler[1]
-            self.rollorigin = self.sensor.euler[2]
-
+            self.yaw_origin = self.sensor.euler[0] 
+            if self.yaw_origin > 180:
+                self.yaw_origin = (self.yaw_origin-180)-180
+            self.pitch_origin = self.sensor.euler[1]
+            self.roll_origin = self.sensor.euler[2]
         except:
-            self.yaworigin = 0
-            self.pitchorigin = 0
-            self.rollorigin = 0
+            print("sensor callibration failed") 
              
     def get_body_angle(self): #IMUによって機体の絶対角度を得る関数　戻り値は3要素のタプル
-
         try:
-            yaw = self.sensor.euler[0] - self.yaworigin #Yaw軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            yaw = self.sensor.euler[0] - self.yaw_origin #Yaw軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
             if yaw > 180: #値が180度を超えている場合
                 yaw = (yaw-180)-180 #±180度の値に補正する
                 
-            pitch = self.sensor.euler[1] -self.pitchorigin #Pitch軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
-            roll = self.sensor.euler[2] -self.rollorigin #Roll軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
-            BodyAngle = (yaw, pitch, roll) #3要素を格納
-
+            pitch = self.sensor.euler[1] -self.pitch_origin #Pitch軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            roll = self.sensor.euler[2] -self.roll_origin #Roll軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            body_angle = (yaw, pitch, roll) #3要素を格納
         except: #センサー値の取得が上手くいかなかったとき
             print("sensor error") 
-            BodyAngle = (0, 0, 0) #全ての要素に0を格納
+            body_angle = (0, 0, 0) #全ての要素に0を格納
             
         print(yaw)
-        return BodyAngle #戻り値は3軸の角度のタプル
+        return body_angle #戻り値は3軸の角度のタプル
         
-            
-    def walk_forward(self, walkDist):
+    def walk_forward(self, walk_distance):
         i = 0 #繰り返しに使うiの初期値設定
         
-        stepCount = abs(round(walkDist/p.walkStepDist)) #旋回動作を行う回数を確定
+        step_count = abs(round(walk_distance/motion_control.parameters.walk_step_distance)) #旋回動作を行う回数を確定
         
-        while i < stepCount:
-            #BodyAngle = get_body_angle.main()
+        while i < step_count:
+            #Body_angle = get_body_angle.main()
             self.rcb4.motionPlay(1)
             
             self.angle = self.get_body_angle()[0]
-            self.X = self.X +  math.sin(math.radians(self.angle))*(p.walkStepDist) #フィールド座標系に置ける自身の位置を更新
-            self.Y = self.Y +  math.cos(math.radians(self.angle))*(p.walkStepDist) #フィールド座標系に置ける自身の位置を更新
+            self.X = self.X +  math.sin(math.radians(self.angle))*(motion_control.parameters.walk_step_distance) #フィールド座標系に置ける自身の位置を更新
+            self.Y = self.Y +  math.cos(math.radians(self.angle))*(motion_control.parameters.walk_step_distance) #フィールド座標系に置ける自身の位置を更新
             
             print("X: ", self.X, "Y: ", self.Y)
             
             while True:     #モーションの再生が終わるまで繰り返し
-                motionNum = self.rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
-                if motionNum < 0:                     #モーション番号が0より小さい場合はエラー
+                motion_number = self.rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
+                if motion_number < 0:                     #モーション番号が0より小さい場合はエラー
                     break
-                if motionNum == 0:                    #モーション番号が0のときは再生されていない状態
+                if motion_number == 0:                    #モーション番号が0のときは再生されていない状態
                     break
                 
-
-            
             i = i+1
             
-    def walk_sideway(self, walkDist):
+    def walk_sideway(self, walk_distance):
         i = 0 #繰り返しに使うiの初期値設定
         
-        stepCount = (round(walkDist/p.walkSideStepDist)) #歩行動作を行う回数を確定
-        #print(stepCount) #歩行動作繰り返し回数を表示
+        step_count = (round(walk_distance/motion_control.parameters.walk_side_step_distance)) #歩行動作を行う回数を確定
+        #print(step_count) #歩行動作繰り返し回数を表示
         
-        if walkDist < 0: #移動量が負の時(左へ移動のとき)
-            
-            stepCount = abs(stepCount)
-            while i < stepCount: #定められた歩行回数まで繰り返し
+        if walk_distance < 0: #移動量が負の時(左へ移動のとき)
+            step_count = abs(step_count)
+            while i < step_count: #定められた歩行回数まで繰り返し
                 self.angle = self.get_body_angle()[0] #IMUの価を読み込む
                 
                 rcb4.motionPlay(3)       #モーション番号3(左横移動)を再生
                 
-                if BodyAngle[0] > 0: #Yaw軸周りの角度が正の時
-                    self.X = self.X + math.cos(math.radians(self.angle))*(-walkSideStepDist) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
-                    self.Y = self.Y + math.sin(math.radians(self.angle))*(walkSideStepDist) #自己位置に[sin(θ)*一歩の移動量]を加算
+                if body_angle[0] > 0: #Yaw軸周りの角度が正の時
+                    self.X = self.X + math.cos(math.radians(self.angle))*(-walk_side_step_distance) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
+                    self.Y = self.Y + math.sin(math.radians(self.angle))*(walk_side_step_distance) #自己位置に[sin(θ)*一歩の移動量]を加算
                 else: #Yaw軸周りの角度が負の時
-                    self.X = self.X + math.cos(math.radians(self.angle))*(-walkSideStepDist) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
-                    self.Y = self.Y + math.sin(math.radians(self.angle))*(walkSideStepDist) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
+                    self.X = self.X + math.cos(math.radians(self.angle))*(-walk_side_step_distance) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
+                    self.Y = self.Y + math.sin(math.radians(self.angle))*(walk_side_step_distance) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
                 
                 while True:     #モーションの再生が終わるまで繰り返し
-                    motionNum = rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
-                    if motionNum < 0:                     #モーション番号が0より小さい場合はエラー
+                    motion_number = rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
+                    if motion_number < 0:                     #モーション番号が0より小さい場合はエラー
                         break
-                    if motionNum == 0:                    #モーション番号が0のときは再生されていない状態
+                    if motion_number == 0:                    #モーション番号が0のときは再生されていない状態
                         break
                 
                 i = i+1
-            
-                
         else: #移動量が正の時(右へ移動の時)
-            
-            while i < stepCount: #定められた歩行回数まで繰り返し
+            while i < step_count: #定められた歩行回数まで繰り返し
                 self.angle = self.get_body_angle()[0] #IMUの価を読み込む
                 
                 rcb4.motionPlay(4)     #モーション番号4(右横移動)を再生
                 
-                if BodyAngle[0] > 0: #Yaw軸周りの角度が正の時
-                    self.X = self.X + math.cos(math.radians(self.angle))*(walkSideStepDist) #自己位置に[cos(θ)*一歩の移動量]を加算
-                    self.Y = self.Y + math.sin(math.radians(self.angle))*(-walkSideStepDist) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
+                if body_angle[0] > 0: #Yaw軸周りの角度が正の時
+                    self.X = self.X + math.cos(math.radians(self.angle))*(walk_side_step_distance) #自己位置に[cos(θ)*一歩の移動量]を加算
+                    self.Y = self.Y + math.sin(math.radians(self.angle))*(-walk_side_step_distance) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
                 else: #Yaw軸周りの角度が負の時
-                    self.X = self.X + math.cos(math.radians(self.angle))*(walkSideStepDist) #自己位置に[cos(θ)*一歩の移動量]を加算
-                    self.Y = self.Y + math.sin(math.radians(self.angle))*(-walkSideStepDist) #自己位置に[sin(θ)*一歩の移動量]を加算
+                    self.X = self.X + math.cos(math.radians(self.angle))*(walk_side_step_distance) #自己位置に[cos(θ)*一歩の移動量]を加算
+                    self.Y = self.Y + math.sin(math.radians(self.angle))*(-walk_side_step_distance) #自己位置に[sin(θ)*一歩の移動量]を加算
                     
                 while True:     #モーションの再生が終わるまで繰り返し
-                    motionNum = rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
-                    if motionNum < 0:                     #モーション番号が0より小さい場合はエラー
+                    motion_number = rcb4.getMotionPlayNum()   #現在再生されているモーション番号を取得
+                    if motion_number < 0:                     #モーション番号が0より小さい場合はエラー
                         break
-                    if motionNum == 0:                    #モーション番号が0のときは再生されていない状態
+                    if motion_number == 0:                    #モーション番号が0のときは再生されていない状態
                         break
                 
                 i = i+1
-                
-    
     else:  #通信が返ってきていないときはエラー
         print ('checkAcknowledge error')
 
