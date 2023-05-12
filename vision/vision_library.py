@@ -11,7 +11,7 @@ def decode_fourcc(v): #デコード用関数 動画コーデック(FourCC)はflo
     #元の戻り値の動画コーデックvは4バイト　フォーマットの4つの1バイト文字の連結
     #ビットシフトでそれぞれの文字コードを末尾に取り出し、0bFF(11111111)との&演算で文字コードを得る
     
-def loadCalibrationFile(mtx_path, dist_path): #キャリブレーションパラメータの読み込み
+def load_calibration_file(mtx_path, dist_path): #キャリブレーションパラメータの読み込み
     try:
         mtx = np.loadtxt(mtx_path, delimiter=',')
         dist = np.loadtxt(dist_path, delimiter=',')
@@ -48,9 +48,9 @@ class VisionLibrary:
         
         print("[カメラ初期化完了]")
         
-    def calib_img(self):      
+    def calibrate_img(self):      
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
-        mtx, dist = loadCalibrationFile(self.MTX_PATH, self.DIST_PATH) #キャリブレーションパラメータ配列を得る
+        mtx, dist = load_calibration_file(self.MTX_PATH, self.DIST_PATH) #キャリブレーションパラメータ配列を得る
         frame_undistort = cv2.undistort(frame, mtx, dist, None) # パラメータを元に画像補正
         lane_shape = np.float32([vision.parameters.BEV_top_left, 
                                  vision.parameters.BEV_top_right, 
@@ -66,7 +66,7 @@ class VisionLibrary:
         return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
         
     def detect_edge(self): #エッジ検出の関数
-        frame = self.calib_img() #キャリブレーション後画像の読み込み
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, vision.parameters.field_lower, vision.parameters.field_upper)   #エッジ赤線をマスク
@@ -163,7 +163,7 @@ class VisionLibrary:
         return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
     
     def detect_ball(self): #ボール検出の関数
-        frame = self.calib_img() #キャリブレーション後画像の読み込み
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         #self.resultimg = frame #結果表示用画像の作成
             
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
@@ -186,7 +186,7 @@ class VisionLibrary:
         return self.ball_x, self.ball_y
 
     def detect_corner(self): #コーナー検出の関数
-        frame = self.calib_img() #キャリブレーション後画像の読み込み        
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame = cv2.inRange(hsv, vision.parameters.field_lower, vision.parameters.field_upper)   #エッジ赤線をマスク
         
@@ -215,7 +215,7 @@ class VisionLibrary:
         return self.corner_type, self.corner_x, self.corner_y #コーナー座標、種別を返す
         
     def display_resultimg(self):#結果画像の表示用関数
-        result = self.calib_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
+        result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         
         if self.found_edge == True: #エッジが存在するとき 存在しないときエッジの値はどちらも0
             #見えている線の合成の描画

@@ -6,7 +6,7 @@ delay = 1
 
 VISION = VisionLibrary()
 while True:
-    VISION.calib_img()
+    VISION.calibrate_img()
     linea, lineb = VISION.detect_edge()
     ballx, bally = VISION.detect_ball()
     cornertype, cornerx, cornery = VISION.detect_corner()
