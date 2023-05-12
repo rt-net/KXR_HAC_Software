@@ -67,22 +67,21 @@ class VisionLibrary:
         
     def detect_edge(self): #エッジ検出の関数
         frame = self.calib_img() #キャリブレーション後画像の読み込み
-        #self.resultimg = frame #結果表示用画像の作成
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, vision.parameters.field_lower, vision.parameters.field_upper)   #エッジ赤線をマスク
 
         blur = cv2.medianBlur(frame_mask,vision.parameters.blur_filter_size) #ぼかしフィルタ
-        line_center_of_graviity = cv2.moments(blur, False) #線の重心座標を得る
+        line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
 
-        line_area = cv2.countNonZero(blur) #線の面積を得る
+        line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
         
         angle = 0 #エッジ角度の初期値
         self.edge_a = 0 
         self.edge_b = 0 #a、bどちらも0を初期値
         
-        if line_area > vision.parameters.line_area_threshhold:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
-            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_graviity["m10"]/line_center_of_graviity["m00"]), int(line_center_of_graviity["m01"]/line_center_of_graviity["m00"]) #線の重心座標を代入
+        if line_pixel_area > vision.parameters.line_pixel_area_threshhold:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
     
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
             
@@ -142,7 +141,7 @@ class VisionLibrary:
                 
                 self.angle = int(math.degrees(math.atan(-(self.y2_average-self.y1_average)/(self.x2_average-self.x1_average)))) #角度の計算(度)
 
-                # #線の角度について機体前後方向と平行が0度になるように計算
+                #線の角度について機体前後方向と平行が0度になるように計算
                 if self.angle < 0:
                     self.angle = -(self.angle + 90) 
                 else:
@@ -152,12 +151,14 @@ class VisionLibrary:
                 self.edge_a = 0 
                 self.edge_b = 0 #a、bどちらも0を代入    
                         
-            #return self.resultimg, self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
         else: #エッジの色が存在しない時
             self.edge_a = 0 
             self.edge_b = 0 #a、bどちらも0を代入 
-        
-            #return self.resultimg, self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
+                
+        if self.edge_a == 0 and self.edge_b == 0:
+            self.found_edge = False
+        else:
+            self.found_edge = True
             
         return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
     
@@ -171,16 +172,17 @@ class VisionLibrary:
         ballcog = cv2.moments(frame_mask, False) #ボールの重心座標を取得
         
         #もしボール画素数が存在判定の閾値を超えていたら
-        if area > vision.parameters.ball_size_threshhold:
-            ball = True
-            self.ball_x,self.ball_y= int(ballcog["m10"]/ballcog["m00"]) , int(ballcog["m01"]/ballcog["m00"]) #ボールの重心座標を得る
-            #return self.resultimg, self.ball_x, self.ball_y
+        if area > vision.parameters.ball_pixel_area_threshold:
+            self.ball_x,self.ball_y = int(ballcog["m10"]/ballcog["m00"]) , int(ballcog["m01"]/ballcog["m00"]) #ボールの重心座標を得る
         else:
-            ball = False
             self.ball_x = 0
             self.ball_y = 0
-            #return self.resultimg, self.ball_x, self.ball_y
-            
+        
+        if self.ball_x == 0 and self.ball_y == 0:
+            self.found_ball = False
+        else:
+            self.found_ball = True
+        
         return self.ball_x, self.ball_y
 
     def detect_corner(self): #コーナー検出の関数
@@ -193,16 +195,16 @@ class VisionLibrary:
         match_right = cv2.matchTemplate(frame, vision.parameters.field_corner_right, cv2.TM_CCOEFF_NORMED)
        
         # 閾値に基づき類似度の高い画素を得る　値はlist
-        match_find_left = np.where(match_left >= vision.parameters.pattern_match_threshhold)
-        match_find_right = np.where(match_right >= vision.parameters.pattern_match_threshhold)
+        left_pattern_pixel_position = np.where(match_left >= vision.parameters.pattern_match_threshhold)
+        right_pattern_pixel_position = np.where(match_right >= vision.parameters.pattern_match_threshhold)
         
-        if match_find_left[0].any(): #左コーナーが検出されているとき
-            self.corner_y = sum(match_find_left[0])/len(match_find_left[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
-            self.corner_x = sum(match_find_left[1])/len(match_find_left[1]) #左コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+        if left_pattern_pixel_position[0].any(): #左コーナーが検出されているとき
+            self.corner_y = sum(left_pattern_pixel_position[0])/len(left_pattern_pixel_position[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_x = sum(left_pattern_pixel_position[1])/len(left_pattern_pixel_position[1]) #左コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
             self.corner_type = 1 #コーナー種別を1に設定
-        elif match_find_right[0].any(): #右コーナーが検出されているとき
-            self.corner_y = sum(match_find_right[0])/len(match_find_right[0]) #右コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
-            self.corner_x = sum(match_find_right[1])/len(match_find_right[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+        elif right_pattern_pixel_position[0].any(): #右コーナーが検出されているとき
+            self.corner_y = sum(right_pattern_pixel_position[0])/len(right_pattern_pixel_position[0]) #右コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_x = sum(right_pattern_pixel_position[1])/len(right_pattern_pixel_position[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
             self.corner_type = 2 #コーナー種別を2に設定
         else: #何も検出されなかったとき
             #座標、コーナー種別を0に設定
@@ -212,10 +214,10 @@ class VisionLibrary:
             
         return self.corner_type, self.corner_x, self.corner_y #コーナー座標、種別を返す
         
-    def disp_resultimg(self):#結果画像の表示用関数
+    def display_resultimg(self):#結果画像の表示用関数
         result = self.calib_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         
-        if self.edge_a != 0 and self.edge_b != 0: #エッジが存在するとき 存在しないときエッジの値はどちらも0
+        if self.found_edge == True: #エッジが存在するとき 存在しないときエッジの値はどちらも0
             #見えている線の合成の描画
             if self.corner_type == 0: #コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
                 if True:#self.center_of_gravity_x or self.center_of_gravity_y:
@@ -234,27 +236,26 @@ class VisionLibrary:
                         thickness=2,
                         lineType=cv2.LINE_4)
 
-        if self.ball_x == 0 and self.ball_y == 0:     
+        if self.found_ball == True:     
             #ボール重心の描画
-            if self.ball_x or self.ball_y:
-                cv2.circle(result, (self.ball_x,self.ball_y), 4, 100, 2, 4) #ボール重心座標にマーク
-                cv2.putText(result,
-                            text=str(self.ball_x),
-                            org=(self.ball_x+10, self.ball_y+10),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
+            cv2.circle(result, (self.ball_x,self.ball_y), 4, 100, 2, 4) #ボール重心座標にマーク
+            cv2.putText(result,
+                        text=str(self.ball_x),
+                        org=(self.ball_x+10, self.ball_y+10),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)
 
-                cv2.putText(result,
-                            text=str(self.ball_y),
-                            org=(self.ball_x+10, self.ball_y+30),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)            
+            cv2.putText(result,
+                        text=str(self.ball_y),
+                        org=(self.ball_x+10, self.ball_y+30),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)            
             
         if self.corner_type != 0: #コーナーが存在する時 corner_type == 0 の時は存在しない
             cv2.rectangle(result, 
@@ -288,5 +289,4 @@ class VisionLibrary:
                             color=(0, 255, 0),
                             thickness=2,
                             lineType=cv2.LINE_4)
-
         return result

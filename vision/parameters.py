@@ -25,7 +25,7 @@ BEV_height = 395 #画角内に配置できる最大の長方形高さ
 field_lower = np.array([165,50,50]) #エッジ色の下閾値
 field_upper = np.array([180,255,255]) #エッジ色の上閾値
 
-line_area_threshhold = 2000 #エッジの存在判定用エッジ色の画素数閾値
+line_pixel_area_threshhold = 2000 #エッジの存在判定用エッジ色の画素数閾値
 
 #--------------------------------------------------------------
 
@@ -33,7 +33,7 @@ line_area_threshhold = 2000 #エッジの存在判定用エッジ色の画素数
 ball_lower = np.array([5,200,180]) #ボール色の下閾値
 ball_upper = np.array([25,255,255]) #ボール色の上閾値
 
-ball_size_threshhold = 2000 #ボールの存在判定用ボール色の画素数閾値
+ball_pixel_area_threshold = 2000 #ボールの存在判定用ボール色の画素数閾値
 
 #--------------------------------------------------------------
 
@@ -51,6 +51,7 @@ field_corner_right = cv2.cvtColor(field_corner_right, cv2.COLOR_BGR2GRAY)
 ret, field_corner_right = cv2.threshold(field_corner_right, bwthresh, 255, cv2.THRESH_BINARY)
 
 pattern_match_threshhold = 0.85 #パターンマッチの閾値
+
 #--------------------------------------------------------------
 
 blur_filter_size = 3 #ぼかしフィルターサイズ
