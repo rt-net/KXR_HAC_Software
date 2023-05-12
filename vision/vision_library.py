@@ -4,15 +4,23 @@ import cv2
 import numpy as np
 import vision.parameters
 
+def decode_fourcc(v): #デコード用関数 動画コーデック(FourCC)はfloatで表現されているためこの関数が必要
+    v = int(v) #intにキャスト(型変換)
+    return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)]) 
+    #動画コーデックをビット演算し連結することでフォーマットを得る
+    #元の戻り値の動画コーデックvは4バイト　フォーマットの4つの1バイト文字の連結
+    #ビットシフトでそれぞれの文字コードを末尾に取り出し、0bFF(11111111)との&演算で文字コードを得る
+    
+def loadCalibrationFile(mtx_path, dist_path): #キャリブレーションパラメータの読み込み
+    try:
+        mtx = np.loadtxt(mtx_path, delimiter=',')
+        dist = np.loadtxt(dist_path, delimiter=',')
+    except Exception as e:
+        raise e
+    return mtx, dist #パラメータ配列を返す
+
 class VisionLibrary:
-    def __init__(self): 
-        def decode_fourcc(v): #デコード用関数 動画コーデック(FourCC)はfloatで表現されているためこの関数が必要
-            v = int(v) #intにキャスト(型変換)
-            return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)]) 
-            #動画コーデックをビット演算し連結することでフォーマットを得る
-            #元の戻り値の動画コーデックvは4バイト　フォーマットの4つの1バイト文字の連結
-            #ビットシフトでそれぞれの文字コードを末尾に取り出し、0bFF(11111111)との&演算で文字コードを得る
-            
+    def __init__(self):             
         print("[カメラ初期化中]")
             
         self.cap = cv2.VideoCapture(0) #デバイス番号を0で指定しインスタンス生成
@@ -21,7 +29,6 @@ class VisionLibrary:
         print("カメラ設定正常: ",self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
 
         # フォーマット・解像度・FPSの設定
-        #cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M','J','P','G'))
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y','U','Y','V')) #フォーマット指定
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, vision.parameters.camera_width) #幅指定
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vision.parameters.camera_height) #高さ指定
@@ -40,17 +47,8 @@ class VisionLibrary:
         self.DIST_PATH = TMP_FOLDER_PATH + "dist.csv"
         
         print("[カメラ初期化完了]")
-
-    def calib_img(self):
-        #キャリブレーションパラメータの読み込み
-        def loadCalibrationFile(mtx_path, dist_path):
-            try:
-                mtx = np.loadtxt(mtx_path, delimiter=',')
-                dist = np.loadtxt(dist_path, delimiter=',')
-            except Exception as e:
-                raise e
-            return mtx, dist #パラメータ配列を返す
         
+    def calib_img(self):      
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
         mtx, dist = loadCalibrationFile(self.MTX_PATH, self.DIST_PATH) #キャリブレーションパラメータ配列を得る
         frame_undistort = cv2.undistort(frame, mtx, dist, None) # パラメータを元に画像補正
@@ -84,13 +82,12 @@ class VisionLibrary:
         self.edge_b = 0 #a、bどちらも0を初期値
         
         if line_area > vision.parameters.line_area_threshhold:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
-            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_graviity["m10"]/line_center_of_graviity["m00"]) , int(line_center_of_graviity["m01"]/line_center_of_graviity["m00"]) #線の重心座標を代入
+            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_graviity["m10"]/line_center_of_graviity["m00"]), int(line_center_of_graviity["m01"]/line_center_of_graviity["m00"]) #線の重心座標を代入
     
-            #print(self.center_of_gravity_x)
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
             
-            kernel = np.ones((2,2),np.uint8) #膨張フィルタ
-            dilation = cv2.dilate(field_edges,kernel,iterations = 1) #膨張
+            dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
+            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
             
             lines = []
             theta_list = []
