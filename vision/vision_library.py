@@ -290,3 +290,98 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
         return result
+    
+    def detect_edge_using_numpy_calc(self): #エッジ検出の関数
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
+        
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame_mask = cv2.inRange(hsv, vision.parameters.field_lower, vision.parameters.field_upper)   #エッジ赤線をマスク
+
+        blur = cv2.medianBlur(frame_mask,vision.parameters.blur_filter_size) #ぼかしフィルタ
+        line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
+
+        line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
+        
+        angle = 0 #エッジ角度の初期値
+        self.edge_a = 0 
+        self.edge_b = 0 #a、bどちらも0を初期値
+        
+        if line_pixel_area > vision.parameters.line_pixel_area_threshhold:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
+    
+            field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
+            
+            dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
+            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
+            
+            lines = []
+            theta_list = []
+            lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
+            line_length = 1000 #描画する線の長さ
+            rho_total = 0
+            theta_total = 0
+
+            if type(lines) == np.ndarray: #エッジが検出されている時
+                
+                #print(lines)
+                
+                theta_std_dev = np.nanstd(lines, 0)
+                theta_std_dev = theta_std_dev[0][1] #θの標準偏差を得る
+                
+                #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
+                #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
+                if theta_std_dev < 1: #θの標準偏差が1未満である時
+                    theta_total = np.sum(lines, 0)[0][1]
+                    rho_total = np.sum(lines, 0)[0][0]
+                else: #θの標準偏差が1以上の時
+                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
+                        rho = line[0][0]
+                        theta = line[0][1]
+                                            
+                        if theta > math.pi/2 : #線の傾きが負の時
+                            rho = -rho #その場合でのrhoの符号は-
+                            theta = math.pi-theta #パラメータθを1~pi/2の値に変換
+                            theta_total = theta_total-theta
+                        else:
+                            theta_total = theta_total+theta
+                            
+                        rho_total = rho_total+rho
+                    
+                rho_average = rho_total/(len(lines))
+                theta_average = theta_total/(len(lines))
+                                                    
+                a = math.cos(theta_average)
+                b = math.sin(theta_average)
+                x0 = a * rho_average
+                y0 = b * rho_average
+                
+                self.x1_average = (x0 - line_length * b)
+                self.x2_average = (x0 + line_length * b)
+                self.y1_average = (y0 + line_length * a)
+                self.y2_average = (y0 - line_length * a)           
+                
+                self.edge_a = (self.y2_average-self.y1_average)/(self.x2_average-self.x1_average) #傾きを導出
+                self.edge_b = self.y1_average/(len(lines)) - self.edge_a*self.x1_average/(len(lines)) #切片を導出
+                
+                self.angle = int(math.degrees(math.atan(-(self.y2_average-self.y1_average)/(self.x2_average-self.x1_average)))) #角度の計算(度)
+
+                #線の角度について機体前後方向と平行が0度になるように計算
+                if self.angle < 0:
+                    self.angle = -(self.angle + 90) 
+                else:
+                    self.angle = -(self.angle - 90)
+                
+            else: #エッジが検出されなかったとき
+                self.edge_a = 0 
+                self.edge_b = 0 #a、bどちらも0を代入    
+                        
+        else: #エッジの色が存在しない時
+            self.edge_a = 0 
+            self.edge_b = 0 #a、bどちらも0を代入 
+                
+        if self.edge_a == 0 and self.edge_b == 0:
+            self.found_edge = False
+        else:
+            self.found_edge = True
+            
+        return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
