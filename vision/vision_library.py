@@ -314,17 +314,12 @@ class VisionLibrary:
             dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
             dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
             
-            lines = []
-            theta_list = []
             lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
             line_length = 1000 #描画する線の長さ
             rho_total = 0
             theta_total = 0
 
             if type(lines) == np.ndarray: #エッジが検出されている時
-                
-                #print(lines)
-                
                 theta_std_dev = np.nanstd(lines, 0)
                 theta_std_dev = theta_std_dev[0][1] #θの標準偏差を得る
                 
@@ -333,23 +328,23 @@ class VisionLibrary:
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_total = np.sum(lines, 0)[0][1]
                     rho_total = np.sum(lines, 0)[0][0]
-                else: #θの標準偏差が1以上の時
-                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
-                        rho = line[0][0]
-                        theta = line[0][1]
-                                            
-                        if theta > math.pi/2 : #線の傾きが負の時
-                            rho = -rho #その場合でのrhoの符号は-
-                            theta = math.pi-theta #パラメータθを1~pi/2の値に変換
-                            theta_total = theta_total-theta
-                        else:
-                            theta_total = theta_total+theta
-                            
-                        rho_total = rho_total+rho
+                else: #θの標準偏差が1以上の時                 
+                    line_parameter_list = lines[:,0]
+                    rho = line_parameter_list[:,0]
+                    theta = line_parameter_list[:,1]
+                    
+                    line_gradient_negative_rho = -1*rho[np.where(theta>math.pi/2)[0]]
+                    line_gradient_negative_theta = theta[np.where(theta>math.pi/2)[0]]-math.pi
+                    
+                    line_gradient_positive_rho = rho[np.where(theta<=math.pi/2)[0]]
+                    line_gradient_positive_theta = theta[np.where(theta<=math.pi/2)[0]]
+                    
+                    rho_total = np.sum(line_gradient_negative_rho) + np.sum(line_gradient_positive_rho)               
+                    theta_total = np.sum(line_gradient_negative_theta) + np.sum(line_gradient_positive_theta)
                     
                 rho_average = rho_total/(len(lines))
-                theta_average = theta_total/(len(lines))
-                                                    
+                theta_average = theta_total/(len(lines))   
+                                       
                 a = math.cos(theta_average)
                 b = math.sin(theta_average)
                 x0 = a * rho_average
