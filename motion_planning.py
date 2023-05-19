@@ -8,6 +8,7 @@ import turn
 import walk_forward
 import walk_sideway
 import get_body_angle
+import ctypes
 
 
 import global_value as g
@@ -18,15 +19,16 @@ delay = 1
 
 VISION = VisionLibrary()
 MOTION = MotionLibrary()
-delay = 1
+
+i = 0
 
 while True:
-    VISION.calib_img()
-    linea, lineb, angle = VISION.detect_edge()
+    VISION.calibrate_img()
+    linea, lineb = VISION.detect_edge()
     ballx, bally = VISION.detect_ball()
     cornertype, cornerx, cornery = VISION.detect_corner()
     
-    result = VISION.disp_resultimg()
+    result = VISION.display_resultimg()
     # cv2.imshow("result", result)
     # if cv2.waitKey(delay) & 0xFF == ord('q'):
     #     break
@@ -36,9 +38,15 @@ while True:
     
     
     
-    print(get_body_angle.main())
+    print(MOTION.get_body_angle())
+    
+    i = i+1
+    
+    if i == 10:
+        MOTION.IMU_calib()
+        
 
-    MOTION.walk_forward(60)
+    #MOTION.walk_forward(60)
     
     # if linea == 0:
     #     turn.main(-30)
