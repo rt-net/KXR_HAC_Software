@@ -20,6 +20,9 @@ def load_calibration_file(mtx_path, dist_path): #キャリブレーションパ�
     return mtx, dist #パラメータ配列を返す
 
 class VisionLibrary:
+    found_edge = False
+    found_ball = False
+    corner_type = 0
     def __init__(self):             
         print("[カメラ初期化中]")
             
