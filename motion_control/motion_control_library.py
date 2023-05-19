@@ -5,7 +5,7 @@ import adafruit_bno055
 import board
 import time
 import sys
-from Rcb4BaseLib import Rcb4BaseLib            #Rcb4BaseLib.pyの中のRcb4BaseLibが使えるように設定
+from Rcb4BaseLib import Rcb4BaseLib
 
 class MotionLibrary:
     X = 0
@@ -32,7 +32,7 @@ class MotionLibrary:
         i2c = board.I2C() #I2Cのインスタンス
         self.sensor = adafruit_bno055.BNO055_I2C(i2c) #IMUのインスタンス
         
-    def IMU_calib(self): #任意でIMUのキャリブレーションを行う関数
+    def IMU_calibration(self): #任意でIMUのキャリブレーションを行う関数
         try:
             self.yaw_origin = self.sensor.euler[0]
             if self.yaw_origin > 180:
@@ -85,8 +85,7 @@ class MotionLibrary:
                 if motion_number < 0:                     #モーション番号が0より小さい場合はエラー
                     break
                 if motion_number == 0:                    #モーション番号が0のときは再生されていない状態
-                    break
-                
+                    break   
             i = i+1
             
     def walk_sideway(self, walk_distance): #指定距離横移動
