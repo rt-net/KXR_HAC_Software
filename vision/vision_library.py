@@ -328,25 +328,19 @@ class VisionLibrary:
                 
                 #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
                 #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
+                line_parameter_list = lines[:,0]
+                rho = line_parameter_list[:,0]
+                theta = line_parameter_list[:,1]
+                
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
-                    theta_total = np.sum(lines, 0)[0][1]
-                    rho_total = np.sum(lines, 0)[0][0]
+                    theta_list = theta
+                    rho_list = rho
                 else: #θの標準偏差が1以上の時                 
-                    line_parameter_list = lines[:,0]
-                    rho = line_parameter_list[:,0]
-                    theta = line_parameter_list[:,1]
-                    
-                    line_gradient_negative_rho = -1*rho[np.where(theta>math.pi/2)[0]]
-                    line_gradient_negative_theta = theta[np.where(theta>math.pi/2)[0]]-math.pi
-                    
-                    line_gradient_positive_rho = rho[np.where(theta<=math.pi/2)[0]]
-                    line_gradient_positive_theta = theta[np.where(theta<=math.pi/2)[0]]
-                    
-                    rho_total = np.sum(line_gradient_negative_rho) + np.sum(line_gradient_positive_rho)               
-                    theta_total = np.sum(line_gradient_negative_theta) + np.sum(line_gradient_positive_theta)
-                    
-                rho_average = rho_total/(len(lines))
-                theta_average = theta_total/(len(lines))   
+                    theta_list = np.where(theta>math.pi/2, theta-math.pi, theta)
+                    rho_list = np.where(theta>math.pi/2, -rho, rho)
+                
+                rho_average = np.average(rho_list)
+                theta_average = np.average(theta_list) 
                                        
                 a = math.cos(theta_average)
                 b = math.sin(theta_average)
