@@ -1,4 +1,5 @@
 import cv2
+import time
 
 from vision.vision_library import VisionLibrary
 
@@ -6,6 +7,7 @@ delay = 1
 
 VISION = VisionLibrary()
 while True:
+    start = time.time()
     VISION.calibrate_img()
     linea, lineb = VISION.detect_edge()
     ballx, bally = VISION.detect_ball()
@@ -13,5 +15,8 @@ while True:
     resultimg = VISION.display_resultimg()
     cv2.imshow("frame3", resultimg)
     
+    finish = time.time()
+    
+    print(finish-start)
     if cv2.waitKey(delay) & 0xFF == ord('q'):
         break
