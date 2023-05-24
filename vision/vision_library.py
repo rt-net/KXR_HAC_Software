@@ -97,44 +97,31 @@ class VisionLibrary:
             dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
             dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
             
-            lines = []
-            theta_list = []
             lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
             LINE_LENGTH = 1000 #描画する線の長さ
             rho_total = 0
             theta_total = 0
 
             if type(lines) == np.ndarray: #エッジが検出されている時
-                for line in lines: #検出された全ての線のパラメータθについてのリストを作成
-                    theta_list.append(line[0][1])
-                theta_std_dev = np.nanstd(theta_list) #θの標準偏差を得る
+                theta_std_dev = np.nanstd(lines, 0)
+                theta_std_dev = theta_std_dev[0][1] #θの標準偏差を得る
                 
                 #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
                 #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
+                line_parameter_list = lines[:,0]
+                rho = line_parameter_list[:,0]
+                theta = line_parameter_list[:,1]
+                
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
-                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
-                        rho = line[0][0]
-                        theta = line[0][1]
-                                            
-                        theta_total = theta_total+theta   
-                        rho_total = rho_total+rho
-                else: #θの標準偏差が1以上の時
-                    for line in lines: #Hough変換で得た配列Linesについて繰り返す
-                        rho = line[0][0]
-                        theta = line[0][1]
-                                            
-                        if theta > math.pi/2 : #線の傾きが負の時
-                            rho = -rho #その場合でのrhoの符号は-
-                            theta = math.pi-theta #パラメータθを1~pi/2の値に変換
-                            theta_total = theta_total-theta
-                        else:
-                            theta_total = theta_total+theta
-                            
-                        rho_total = rho_total+rho
-                    
-                rho_average = rho_total/(len(lines))
-                theta_average = theta_total/(len(lines))
-                                                    
+                    theta_list = theta
+                    rho_list = rho
+                else: #θの標準偏差が1以上の時                 
+                    theta_list = np.where(theta>math.pi/2, theta-math.pi, theta)
+                    rho_list = np.where(theta>math.pi/2, -rho, rho)
+                
+                rho_average = np.average(rho_list)
+                theta_average = np.average(theta_list) 
+                                       
                 a = math.cos(theta_average)
                 b = math.sin(theta_average)
                 x0 = a * rho_average
@@ -156,21 +143,13 @@ class VisionLibrary:
                 else:
                     self.angle = -(self.angle - 90)
                 
-            else: #エッジが検出されなかったとき
-                self.edge_a = 0 
-                self.edge_b = 0 #a、bどちらも0を代入    
-                        
-        else: #エッジの色が存在しない時
-            self.edge_a = 0 
-            self.edge_b = 0 #a、bどちらも0を代入 
-                
         if self.edge_a == 0 and self.edge_b == 0:
             self.is_found_edge = False
         else:
             self.is_found_edge = True
             
         return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
-    
+       
     def detect_ball(self): #ボール検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み            
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
@@ -233,6 +212,13 @@ class VisionLibrary:
             
             #線の角度(度)の画像への書き込み
             cv2.putText(result,
+            cv2.line(result, 
+                    (int(self.x1_average), int(self.y1_average)), 
+                    (int(self.x2_average), int(self.y2_average)), 
+                    (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
+            
+            #線の角度(度)の画像への書き込み
+            cv2.putText(result,
                         text=str(self.angle),
                         org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -252,7 +238,6 @@ class VisionLibrary:
                         color=(0, 255, 0),
                         thickness=2,
                         lineType=cv2.LINE_4)
-
             cv2.putText(result,
                         text=str(self.ball_pixel_coordinate_y),
                         org=(self.ball_pixel_coordinate_x+10, self.ball_pixel_coordinate_y+30),
