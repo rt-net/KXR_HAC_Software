@@ -7,7 +7,6 @@ import adafruit_bno055
 import board
 from Rcb4BaseLib import Rcb4BaseLib
 from matplotlib import pyplot as plt
-# from matplotlib import animation
 
 import motion_control.parameters
 
@@ -78,12 +77,12 @@ class MotionLibrary:
     def walk_forward_continue(self): #指定距離前進
         #KRCの上ボタンを擬似的に押す
         self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.UP.value)
-        self.is_button_pressed = True
+        self.is_button_pressed = True #ボタンの状態を更新する
         
     def motion_stop(self): #指定距離前進
         #KRCの上ボタンを擬似的に押す
         self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.NONE.value)
-        self.is_button_pressed = False
+        self.is_button_pressed = False #ボタンの状態を更新する
         time.sleep(0.5)        
         
     def touch_ball(self): #ボールを触るモーション
@@ -116,7 +115,6 @@ class MotionLibrary:
         i = 0 #繰り返しに使うiの初期値設定
         
         step_count = (round(walk_distance/motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL)) #歩行動作を行う回数を確定
-        #print(step_count) #歩行動作繰り返し回数を表示
         
         if walk_distance < 0: #移動量が負の時(左へ移動のとき)
             step_count = abs(step_count)
@@ -168,7 +166,7 @@ class MotionLibrary:
                         break
                 i = i+1
                 
-    def calculate_field_coordinate(self, motion_type_or_time):
+    def calculate_field_coordinate(self, motion_type_or_time): #フィールド上での絶対座標をデッドレコニング手法で計算する関数
         self.field_absolute_angle = self.get_body_angle()[0] #IMUの価を読み込む
         if motion_type_or_time == "LEFT":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle)) * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
@@ -184,28 +182,27 @@ class MotionLibrary:
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
         else:
             print("coordinate calculation error")
-        #print(self.field_absolute_angle)
-        #print("X座標: ", self.field_absolute_coordinate_x, "Y座標: ", self.field_absolute_coordinate_y)
-        if self.is_plot_required == True:
-            self.plot_graph()
+
+        if self.is_plot_required == True: #グラフのプロットが要求されている時
+            self.plot_graph() #プロットする
             
-    def field_absolute_cordinate(self):
+    def field_absolute_cordinate(self): #フィールド上での絶対座標を返す関数
         return self.field_absolute_coordinate_x, self.field_absolute_coordinate_y
     
-    def set_plot(self):
-        self.is_plot_required = True
-        self.ax.set_xlim(-1000, 1000)
-        self.ax.set_ylim(-1000, 1000)
-        self.ax.set_aspect('equal')
-        self.x.append(self.field_absolute_coordinate_x)
-        self.y.append(self.field_absolute_coordinate_y)
-        self.ax.plot(self.x, self.y, color='C0', linestyle='-')
+    def set_plot(self): #プロットに関する設定をする関数
+        self.is_plot_required = True #プロットの要求を設定する
+        self.ax.set_xlim(-1000, 1000) #グラフのX軸の最大/最小値の設定
+        self.ax.set_ylim(-1000, 1000) #グラフのY軸の最大/最小値の設定
+        self.ax.set_aspect('equal') #グラフの形状の設定
+        self.x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
+        self.y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
+        self.ax.plot(self.x, self.y, color='C0', linestyle='-') #初期配列をプロットする(中身は0, 0)
         plt.pause(0.001)
         
     def plot_graph(self):
-        self.x.append(self.field_absolute_coordinate_x)
-        self.y.append(self.field_absolute_coordinate_y)
-        self.ax.plot(self.x, self.y, color='C0', linestyle='-')
+        self.x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入
+        self.y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入
+        self.ax.plot(self.x, self.y, color='C0', linestyle='-') #配列をプロットする
         plt.pause(0.001)
         
             
