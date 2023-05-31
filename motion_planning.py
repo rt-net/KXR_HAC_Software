@@ -8,10 +8,10 @@ delay = 1
 VISION = VisionLibrary()
 MOTION = MotionLibrary()
 
-MOTION.motion_stop()
+MOTION.stop_motion()
 MOTION.set_plot()
 
-dist = 200
+distance = 200
 i = 0
 
 start = time.time()
@@ -31,21 +31,21 @@ while True:
         MOTION.walk_forward_continue()
     
     if angle != 0:
-        dist =  get_distance_from_the_edge.main(slope, intercept)
+        distance =  get_distance_from_the_edge.main(slope, intercept)
     else:
-        dist = 300
+        distance = 300
     
     finish = time.time()
     
-    if dist < 150:
-        MOTION.motion_stop()
+    if distance < 150:
+        MOTION.stop_motion()
         MOTION.turn(angle)
         if angle > 0:
-            MOTION.motion_stop()
-            MOTION.walk_sideway(-(dist-200))
+            MOTION.stop_motion()
+            MOTION.walk_sideway(-(distance-200))
         else:
-            MOTION.motion_stop()
-            MOTION.walk_sideway((dist-200))
+            MOTION.stop_motion()
+            MOTION.walk_sideway((distance-200))
     
     if MOTION.button_state() == True:
         MOTION.calculate_field_coordinate((finish-start))

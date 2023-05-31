@@ -79,8 +79,8 @@ class MotionLibrary:
         self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.UP.value)
         self.is_button_pressed = True #ボタンの状態を更新する
         
-    def motion_stop(self): #指定距離前進
-        #KRCの上ボタンを擬似的に押す
+    def stop_motion(self): #モーションを停止
+        #KRCのボタンを擬似的に離す
         self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.NONE.value)
         self.is_button_pressed = False #ボタンの状態を更新する
         time.sleep(0.5)        
