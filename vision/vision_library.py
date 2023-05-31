@@ -212,13 +212,6 @@ class VisionLibrary:
             
             #線の角度(度)の画像への書き込み
             cv2.putText(result,
-            cv2.line(result, 
-                    (int(self.x1_average), int(self.y1_average)), 
-                    (int(self.x2_average), int(self.y2_average)), 
-                    (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
-            
-            #線の角度(度)の画像への書き込み
-            cv2.putText(result,
                         text=str(self.angle),
                         org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -284,9 +277,9 @@ class VisionLibrary:
 
         line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
         
-        angle = 0 #エッジ角度の初期値
-        self.edge_a = 0 
-        self.edge_b = 0 #a、bどちらも0を初期値
+        self.angle = 0 #エッジ角度の初期値
+        self.slope = 0 
+        self.intercept = 0 #a、bどちらも0を初期値
         
         if line_pixel_area > vision.parameters.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
@@ -331,8 +324,8 @@ class VisionLibrary:
                 self.y1_average = (y0 + LINE_LENGTH * a)
                 self.y2_average = (y0 - LINE_LENGTH * a)           
                 
-                self.edge_a = (self.y2_average-self.y1_average)/(self.x2_average-self.x1_average) #傾きを導出
-                self.edge_b = self.y1_average/(len(lines)) - self.edge_a*self.x1_average/(len(lines)) #切片を導出
+                self.slope = (self.y2_average-self.y1_average)/(self.x2_average-self.x1_average) #傾きを導出
+                self.intercept = self.y1_average - self.slope*self.x1_average #切片を導出
                 
                 self.angle = int(math.degrees(math.atan(-(self.y2_average-self.y1_average)/(self.x2_average-self.x1_average)))) #角度の計算(度)
 
@@ -342,9 +335,9 @@ class VisionLibrary:
                 else:
                     self.angle = -(self.angle - 90)
                 
-        if self.edge_a == 0 and self.edge_b == 0:
+        if self.slope == 0 and self.intercept == 0:
             self.is_found_edge = False
         else:
             self.is_found_edge = True
             
-        return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
+        return self.angle, self.slope, self.intercept #エッジ角度、エッジ切片を返す

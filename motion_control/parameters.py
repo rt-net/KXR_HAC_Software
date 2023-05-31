@@ -5,6 +5,8 @@
 FORWARD_SINGLE_STEP_TRAVEL = 38 #前進1歩あたりの移動量(mm)
 SIDE_SINGLE_STEP_TRAVEL = 16 #横歩行あたりの移動量(mm)
 TURN_SINGLE_STEP_ANGLE = 25 #旋回一回あたりの回転角度(度)
+
+FORWARD_1_SECOND_TRAVEL = 75
 #--------------------------------------------------------
 #rcb4上でのモーション番号の設定
 RCB4_WALK_FORWARD = 1 #RCB4内のモーション番号　前進

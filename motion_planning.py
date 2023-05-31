@@ -1,30 +1,24 @@
-import cv2
 from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
 import get_distance_from_the_edge
-from vision import parameters as p
 import time
-import turn
-import walk_forward
-import walk_sideway
-import get_body_angle
-import ctypes
-
-
-import global_value as g
-g.X = 0
-g.Y = 0
 
 delay = 1
 
 VISION = VisionLibrary()
 MOTION = MotionLibrary()
 
+MOTION.motion_stop()
+MOTION.set_plot()
+
+dist = 200
 i = 0
+
+start = time.time()
 
 while True:
     VISION.calibrate_img()
-    linea, lineb = VISION.detect_edge()
+    angle, slope, intercept = VISION.detect_edge_using_numpy_calc()
     ballx, bally = VISION.detect_ball()
     cornertype, cornerx, cornery = VISION.detect_corner()
     
@@ -33,31 +27,32 @@ while True:
     # if cv2.waitKey(delay) & 0xFF == ord('q'):
     #     break
     
+    if MOTION.button_state() == False:
+        MOTION.walk_forward_continue()
     
-    #a = MOTION.get_body_angle()
+    if angle != 0:
+        dist =  get_distance_from_the_edge.main(slope, intercept)
+    else:
+        dist = 300
     
+    finish = time.time()
     
+    if dist < 150:
+        MOTION.motion_stop()
+        MOTION.turn(angle)
+        if angle > 0:
+            MOTION.motion_stop()
+            MOTION.walk_sideway(-(dist-200))
+        else:
+            MOTION.motion_stop()
+            MOTION.walk_sideway((dist-200))
     
-    print(MOTION.get_body_angle())
+    if MOTION.button_state() == True:
+        MOTION.calculate_field_coordinate((finish-start))
     
-    i = i+1
-    
-    if i == 10:
-        MOTION.IMU_calib()
+    start = time.time()
         
-
-    #MOTION.walk_forward(60)
-    
-    # if linea == 0:
-    #     turn.main(-30)
-    
-    
-    # if linea != 0:
-    #     dist =  get_distance_from_the_edge.main(linea, lineb)
-        
-    #     turn.main(angle)
-    #     walk_sideway.main(-(dist-150))
-    #     MOTION.walk_forward(50)
+    print(MOTION.field_absolute_cordinate())
         
         
         

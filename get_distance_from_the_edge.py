@@ -1,26 +1,27 @@
 import math
 import numpy
-import global_value as g
-from vision import parameters as p
+from vision import parameters
 
 
-def main(slope, integer):
+def main(slope, intercept):
     
-    print("slope", slope)
-    print("integer", integer)
+    # print("slope", slope)
+    # print("intercept", intercept)
     
-    Ax = p.BEVwidth/2
-    Ay = p.BEVheight + 90
+    Ax = parameters.BEV_FRAME_WIDTH/2
+    Ay = parameters.BEV_FRAME_HEIGHT + 90
     
-    Bx = (Ay-integer)/slope
+    # print("slope, intercept", slope, intercept)
+    
+    Bx = (Ay-intercept)/slope
     By = Ay
     
     Cx = Ax
-    Cy = Ax*slope+integer
+    Cy = Ax*slope+intercept
     
-    print("Ax, Ay", Ax, Ay)
-    print("Bx, By", Bx, By)
-    print("Cx, Cy", Cx, Cy)
+    # print("Ax, Ay", Ax, Ay)
+    # print("Bx, By", Bx, By)
+    # print("Cx, Cy", Cx, Cy)
     
     AC = (Ay - Cy)
     AB = (Ax - Bx)
@@ -28,8 +29,6 @@ def main(slope, integer):
     BC = (AC**2 + AB**2)**(1/2)
     
     dist = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
-    
-    print(dist)
     
     # framex = p.BEVwidth #画角の大きさ
     # framey = p.BEVheight #画角の大きさ
@@ -40,8 +39,8 @@ def main(slope, integer):
     # print(turnoriginx)
     # print(turnoriginy)
 
-    # xdash = (framey - integer)/slope
-    # ydash = slope*(framex/2)+integer
+    # xdash = (framey - intercept)/slope
+    # ydash = slope*(framex/2)+intercept
 
     # #print(turnoriginx, ydash)
     # #print(xdash, turnoriginy)

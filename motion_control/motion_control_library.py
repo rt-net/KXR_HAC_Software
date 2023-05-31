@@ -7,7 +7,7 @@ import adafruit_bno055
 import board
 from Rcb4BaseLib import Rcb4BaseLib
 from matplotlib import pyplot as plt
-from matplotlib import animation
+# from matplotlib import animation
 
 import motion_control.parameters
 
@@ -43,7 +43,10 @@ class MotionLibrary:
         self.x = []
         self.y = []
         
+        self.is_plot_required = False
         self.fig, self.ax = plt.subplots()
+        
+        self.is_button_pressed = False
         
     def IMU_calibration(self): #任意でIMUのキャリブレーションを行う関数
         try:
@@ -68,7 +71,21 @@ class MotionLibrary:
         body_angle = (self.yaw, self.pitch, self.roll)
             
         return body_angle #戻り値は3軸の角度のタプル
-    
+            
+    def button_state(self):
+        return self.is_button_pressed    
+        
+    def walk_forward_continue(self): #指定距離前進
+        #KRCの上ボタンを擬似的に押す
+        self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.UP.value)
+        self.is_button_pressed = True
+        
+    def motion_stop(self): #指定距離前進
+        #KRCの上ボタンを擬似的に押す
+        self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.NONE.value)
+        self.is_button_pressed = False
+        time.sleep(0.5)        
+        
     def touch_ball(self): #ボールを触るモーション
         rcb4.motionPlay(motion_control.parameters.RCB4_TOUCH_BALL) #モーション番号3(左横移動)を再生
         while True: #モーションの再生が終わるまで繰り返し
@@ -151,27 +168,41 @@ class MotionLibrary:
                         break
                 i = i+1
                 
-    def calculate_field_coordinate(self, motion_type):
+    def calculate_field_coordinate(self, motion_type_or_time):
         self.field_absolute_angle = self.get_body_angle()[0] #IMUの価を読み込む
-        if motion_type == "LEFT":
+        if motion_type_or_time == "LEFT":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle)) * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量]を加算
-        elif motion_type == "RIGHT":
-            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle))*(motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量]を加算
-            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.sin(math.radians(self.field_absolute_angle))*(-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
-        elif motion_type == "FORWARD":
+        elif motion_type_or_time == "RIGHT":
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量]を加算
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.sin(math.radians(self.field_absolute_angle)) * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
+        elif motion_type_or_time == "FORWARD":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
+        elif type(motion_type_or_time) == float:
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
         else:
             print("coordinate calculation error")
-        print(self.field_absolute_angle)
+        #print(self.field_absolute_angle)
         #print("X座標: ", self.field_absolute_coordinate_x, "Y座標: ", self.field_absolute_coordinate_y)
-
-        self.plot_graph()
+        if self.is_plot_required == True:
+            self.plot_graph()
+            
+    def field_absolute_cordinate(self):
+        return self.field_absolute_coordinate_x, self.field_absolute_coordinate_y
+    
+    def set_plot(self):
+        self.is_plot_required = True
+        self.ax.set_xlim(-1000, 1000)
+        self.ax.set_ylim(-1000, 1000)
+        self.ax.set_aspect('equal')
+        self.x.append(self.field_absolute_coordinate_x)
+        self.y.append(self.field_absolute_coordinate_y)
+        self.ax.plot(self.x, self.y, color='C0', linestyle='-')
+        plt.pause(0.001)
         
     def plot_graph(self):
-        self.ax.set_xlim(-500, 500)
-        self.ax.set_ylim(-500, 500)
         self.x.append(self.field_absolute_coordinate_x)
         self.y.append(self.field_absolute_coordinate_y)
         self.ax.plot(self.x, self.y, color='C0', linestyle='-')
