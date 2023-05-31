@@ -23,9 +23,9 @@ while True:
     cornertype, cornerx, cornery = VISION.detect_corner()
     
     result = VISION.display_resultimg()
-    # cv2.imshow("result", result)
-    # if cv2.waitKey(delay) & 0xFF == ord('q'):
-    #     break
+    cv2.imshow("result", result)
+    if cv2.waitKey(delay) & 0xFF == ord('q'):
+        break
     
     if MOTION.button_state() == False:
         MOTION.walk_forward_continue()
