@@ -104,7 +104,7 @@ class MotionLibrary:
         
     def touch_ball(self):
         """Play ball-touch motion"""
-        rcb4.motionPlay(motion_control.parameters.RCB4_TOUCH_BALL) #モーション番号3(左横移動)を再生
+        self.rcb4.motionPlay(motion_control.parameters.RCB4_TOUCH_BALL) #モーション番号3(左横移動)を再生
         while True: #モーションの再生が終わるまで繰り返し
             motion_number = self.rcb4.getMotionPlayNum() #現在再生されているモーション番号を取得
             if motion_number < 0: #モーション番号が0より小さい場合はエラー

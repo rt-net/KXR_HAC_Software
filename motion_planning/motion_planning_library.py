@@ -8,6 +8,9 @@ from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
 from motion_planning import parameters
 
+BEV_FRAME_WIDTH = 345 #画角内に配置できる最大の長方形幅
+BEV_FRAME_HEIGHT = 395 #画角内に配置できる最大の長方形幅
+
 class MotionPlanningLibrary:
     def __init__(self):
         self.VISION = VisionLibrary()
@@ -36,7 +39,7 @@ class MotionPlanningLibrary:
     def get_vision(self):
         self.VISION.calibrate_img()
         self.angle, self.slope, self.intercept = self.VISION.detect_edge_using_numpy_calc()
-        self.ball_x_coordinate, self.ball_y_coordinate = self.VISION.detect_ball()
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
         self.result_image = self.VISION.display_resultimg()
         
@@ -61,7 +64,42 @@ class MotionPlanningLibrary:
             else:
                 self.MOTION.motion_stop()
                 self.MOTION.walk_sideway((dist-parameters.WALK_PATH_FIELD_EDGE_DISTANCE))
+                
+    def approach_to_ball(self):        
+        self.get_vision()
         
+        if self.ball_coordinate_x != 0 and self.ball_coordinate_y != 0:
+            print(self.ball_coordinate_x, self.ball_coordinate_y)
+            
+            robot_to_ball_distance_x = self.ball_coordinate_x-(BEV_FRAME_WIDTH/2)
+            robot_to_ball_distance_y = BEV_FRAME_HEIGHT - self.ball_coordinate_y
+            
+            print(robot_to_ball_distance_x)
+            
+            robot_to_ball_angle = math.degrees(math.tan(robot_to_ball_distance_x/robot_to_ball_distance_y))
+            
+            print(robot_to_ball_angle)
+            
+            self.MOTION.turn(robot_to_ball_angle)
+            
+            while True:
+                self.MOTION.walk_forward_continue()
+                self.get_vision()
+                robot_to_ball_distance_y = BEV_FRAME_HEIGHT - self.ball_coordinate_y
+                if robot_to_ball_distance_y < parameters.BALL_APPROACH_THRESHOLD:
+                    self.MOTION.stop_motion()
+                    break
+            
+            robot_to_ball_distance_x = self.ball_coordinate_x-(BEV_FRAME_WIDTH/2)
+            
+            self.MOTION.walk_sideway(robot_to_ball_distance_x)
+            
+            self.MOTION.touch_ball()
+            
+            print("touched")
         
-        
-        
+    def display_image(self):
+        return self.result_image
+    
+            
+            
