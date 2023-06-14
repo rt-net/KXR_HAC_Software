@@ -261,7 +261,7 @@ class MotionLibrary:
         self.axis.set_aspect('equal') #グラフの形状の設定
         self.x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
         self.y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
-        self.ax.plot(self.x, self.y, color='C0', linestyle='-') #初期配列をプロットする(中身は0, 0)
+        self.axis.plot(self.x, self.y, color='C0', linestyle='-') #初期配列をプロットする(中身は0, 0)
         plt.pause(0.001)
         
     def plot_graph(self):
