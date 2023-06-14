@@ -66,12 +66,15 @@ class MotionLibrary:
         tuple (yaw, pitch, roll)
         """
         try:
-            self.yaw = self.sensor.euler[0] - self.yaw_origin #field_absolute_coordinate_yaw軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            self.yaw = self.sensor.euler[0] - self.yaw_origin 
+            #field_absolute_coordinate_yaw軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
             if self.yaw > 180: #値が180度を超えている場合
                 self.yaw = (self.yaw-180)-180 #±180度の値に補正する
                 
-            self.pitch = self.sensor.euler[1] - self.pitch_origin #Pitch軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
-            self.roll = self.sensor.euler[2] - self.roll_origin #Roll軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            self.pitch = self.sensor.euler[1] - self.pitch_origin 
+            #Pitch軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
+            self.roll = self.sensor.euler[2] - self.roll_origin 
+            #Roll軸の値を読み込む　キャリブレーションの補正値が存在する場合は補正を行う
         except: #センサー値の取得が上手くいかなかったとき
             print("sensor error") 
         
@@ -116,11 +119,11 @@ class MotionLibrary:
         walk_distance: int
                        distance in mm
         """
-        i = 0 #歩数カウンターの設定
+        step_counter = 0 #歩数カウンターの設定
         
         step_count = abs(round(walk_distance/motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL)) #歩行動作を行う回数を確定
         
-        while i < step_count:
+        while step_counter < step_count:
             self.rcb4.motionPlay(motion_control.parameters.RCB4_WALK_FORWARD)
             self.calculate_field_coordinate("FORWARD")
 
@@ -130,7 +133,7 @@ class MotionLibrary:
                     break
                 if motion_number == 0: #モーション番号が0のときは再生されていない状態
                     break   
-            i = i+1
+            step_counter = step_counter+1
             
     def walk_sideway(self, walk_distance):
         """Play side-step  motion according to step count
@@ -139,13 +142,13 @@ class MotionLibrary:
         walk_distance: int
                        distance in mm
         """
-        i = 0 #歩数カウンターの設定
+        step_counter = 0 #歩数カウンターの設定
         
         step_count = (round(walk_distance/motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL)) #歩行動作を行う回数を確定
         
         if walk_distance < 0: #移動量が負の時(左へ移動のとき)
             step_count = abs(step_count) #歩数を絶対値に直す
-            while i < step_count: #定められた歩行回数まで繰り返し
+            while step_counter < step_count: #定められた歩行回数まで繰り返し
                 self.rcb4.motionPlay(motion_control.parameters.RCB4_WALK_LEFT) #モーション番号3(左横移動)を再生
                 self.calculate_field_coordinate("LEFT")
                 
@@ -155,9 +158,9 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                i = i+1
+                step_counter = step_counter+1
         else: #移動量が正の時(右へ移動の時)
-            while i < step_count: #定められた歩行回数まで繰り返し                
+            while step_counter < step_count: #定められた歩行回数まで繰り返し                
                 self.rcb4.motionPlay(motion_control.parameters.RCB4_WALK_RIGHT) #モーション番号4(右横移動)を再生
                 self.calculate_field_coordinate("RIGHT")
                     
@@ -167,7 +170,7 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                i = i+1
+                step_counter = step_counter+1
                 
     def turn(self, turn_angle):
         """Play turn motion according to turn angle
@@ -176,10 +179,10 @@ class MotionLibrary:
         turn_angle: int
                     angle in degrees
         """
-        i = 0 #歩数カウンターの設定
+        step_counter = 0 #歩数カウンターの設定
         turn_count = abs(round(turn_angle/motion_control.parameters.TURN_SINGLE_STEP_ANGLE)) #旋回動作を行う回数を確定
         if turn_angle < 0: #旋回角度が負の時(左旋回のとき)
-            while i < turn_count: #定められた旋回回数まで繰り返し
+            while step_counter < turn_count: #定められた旋回回数まで繰り返し
                 self.rcb4.motionPlay(motion_control.parameters.RCB4_TURN_LEFT) #モーション番号13(左旋回)を再生
                 while True: #モーションの再生が終わるまで繰り返し
                     motion_number = self.rcb4.getMotionPlayNum() #現在再生されているモーション番号を取得
@@ -187,9 +190,9 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                i = i+1
+                step_counter = step_counter+1
         else: #旋回角度が正の時(右旋回の時)
-            while i < turn_count: #定められた旋回回数まで繰り返し
+            while step_counter < turn_count: #定められた旋回回数まで繰り返し
                 self.rcb4.motionPlay(motion_control.parameters.RCB4_TURN_RIGHT) #モーション番号14(右旋回)を再生
                 while True:     #モーションの再生が終わるまで繰り返し
                     motion_number = self.rcb4.getMotionPlayNum() #現在再生されているモーション番号を取得
@@ -197,7 +200,7 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                i = i+1
+                step_counter = step_counter+1
                 
     def calculate_field_coordinate(self, motion_type_or_time):
         """Calculate current coordinate in the field by IMU based dead reckoning
@@ -209,17 +212,33 @@ class MotionLibrary:
         """
         self.field_absolute_angle = self.get_body_angle()[0] #IMUの価を読み込む
         if motion_type_or_time == "LEFT":
-            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle)) * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
-            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量]を加算
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
+                                             + math.cos(math.radians(self.field_absolute_angle))\
+                                             * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
+                                             + math.sin(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量]を加算
         elif motion_type_or_time == "RIGHT":
-            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量]を加算
-            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.sin(math.radians(self.field_absolute_angle)) * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
+                                             + math.cos(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量]を加算
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
+                                             + math.sin(math.radians(self.field_absolute_angle))\
+                                             * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
         elif motion_type_or_time == "FORWARD":
-            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
-            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
+                                             + math.sin(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
+                                             + math.cos(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
         elif type(motion_type_or_time) == float:
-            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x + math.sin(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
-            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y + math.cos(math.radians(self.field_absolute_angle)) * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
+            self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
+                                             + math.sin(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
+            self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
+                                             + math.cos(math.radians(self.field_absolute_angle))\
+                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
         else:
             print("coordinate calculation error")
 
