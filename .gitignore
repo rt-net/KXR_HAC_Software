@@ -1,3 +1,7 @@
 __pycache__/
 *.swp
 
+get_distance_from_the_edge_test
+left_hand_approach_test
+motio_library_test
+vision_library_test

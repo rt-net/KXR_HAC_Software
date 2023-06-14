@@ -15,3 +15,5 @@ RCB4_WALK_RIGHT = 4 #RCB4内のモーション番号　右横移動
 RCB4_TOUCH_BALL = 20 #RCB4内のモーション番号　ボールタッチ
 RCB4_TURN_LEFT = 13 #RCB4内のモーション番号　左旋回
 RCB4_TURN_RIGHT = 14 #RCB4内のモーション番号　右旋回
+#--------------------------------------------------------
+ROBOT_REGULAR_PAUSE = 0.5

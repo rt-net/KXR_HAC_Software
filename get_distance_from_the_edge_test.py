@@ -20,9 +20,5 @@ def main(slope, intercept):
     
     dist = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
     
-    
     return dist
-
-
-
 

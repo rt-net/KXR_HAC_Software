@@ -1,11 +1,9 @@
 from motion_control.motion_control_library import MotionLibrary
 
-Motion = MotionLibrary()
+MOTION = MotionLibrary()
 
 while True:
-    Motion.plot_set()
-    Motion.walk_forward(90)
-    Motion.turn(90)
-    Motion.walk_sideway(90)
-    
-
+    MOTION.plot_set()
+    MOTION.walk_forward(90)
+    MOTION.turn(90)
+    MOTION.walk_sideway(90)

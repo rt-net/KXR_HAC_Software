@@ -9,7 +9,7 @@ VISION = VisionLibrary()
 while True:
     start = time.time()
     VISION.calibrate_img()
-    linea, lineb = VISION.detect_edge_using_numpy_calc()
+    linea, lineb, linec = VISION.detect_edge_using_numpy_calc()
     ballx, bally = VISION.detect_ball()
     cornertype, cornerx, cornery = VISION.detect_corner()
     

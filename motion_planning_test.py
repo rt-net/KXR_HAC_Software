@@ -2,19 +2,19 @@ from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
 import get_distance_from_the_edge
 import time
+import cv2
 
-delay = 1
+image_display_delay_ms = 1 #画像の表示時間 (ms)
 
-VISION = VisionLibrary()
-MOTION = MotionLibrary()
+VISION = VisionLibrary() #画像処理ライブラリのインスタンス
+MOTION = MotionLibrary() #動作再生ライブラリのインスタンス
 
-MOTION.stop_motion()
-MOTION.set_plot()
+MOTION.stop_motion() #動作の再生状態を初期化
+MOTION.set_plot() #グラフプロットの設定
 
-distance = 200
-i = 0
+distance = 200 #エッジ沿いを歩行する際のエッジからの距離
 
-start = time.time()
+start = time.time() #処理時間計測の開始
 
 while True:
     VISION.calibrate_img()
@@ -24,7 +24,7 @@ while True:
     
     result = VISION.display_resultimg()
     cv2.imshow("result", result)
-    if cv2.waitKey(delay) & 0xFF == ord('q'):
+    if cv2.waitKey(image_display_delay_ms) & 0xFF == ord('q'):
         break
     
     if MOTION.button_state() == False:
@@ -53,7 +53,3 @@ while True:
     start = time.time()
         
     print(MOTION.field_absolute_cordinate())
-        
-        
-        
-        
