@@ -23,6 +23,8 @@ class MotionLibrary:
         else:
             print("RCB-4 Error")
             print("[RCB4初期化失敗]")
+            #raise ModuleNotFoundError("RCB4初期化失敗")
+            #RCB4が接続されていないときにエラーを返したい場合は上のコメントアウトを外す
         
         i2c = board.I2C() #I2Cのインスタンス
         self.sensor = adafruit_bno055.BNO055_I2C(i2c) #IMUのインスタンス
@@ -39,10 +41,10 @@ class MotionLibrary:
         self.pitch_origin = 0
         self.roll_origin = 0
         
-        self.x = []
-        self.y = []
+        self.coordinate_history_x = []
+        self.coordinate_history_y = []
         
-        self.is_plot_required = False
+        self.use_coordinate_plot_graph = False
         self.figure, self.axis = plt.subplots()
         
         self.is_button_pressed = False
@@ -82,11 +84,13 @@ class MotionLibrary:
             
         return body_angle #戻り値は3軸の角度のタプル
             
-    def button_state(self):
+    def check_button_pressed_state(self):
         """Returns button state
         Returns:
         --------
         bool
+        pressed-->True
+        released-->False
         """
         return self.is_button_pressed    
         
@@ -141,6 +145,8 @@ class MotionLibrary:
         ----------
         walk_distance: int
                        distance in mm
+                       right-->walk_distance > 0
+                       left-->walk_distance < 0
         """
         step_counter = 0 #歩数カウンターの設定
         
@@ -178,6 +184,8 @@ class MotionLibrary:
         ----------
         turn_angle: int
                     angle in degrees
+                    right --> turn_angle > 0
+                    left --> turn_angle < 0
         """
         step_counter = 0 #歩数カウンターの設定
         turn_count = abs(round(turn_angle/motion_control.parameters.TURN_SINGLE_STEP_ANGLE)) #旋回動作を行う回数を確定
@@ -242,10 +250,10 @@ class MotionLibrary:
         else:
             print("coordinate calculation error")
 
-        if self.is_plot_required == True: #グラフのプロットが要求されている時
+        if self.use_coordinate_plot_graph == True: #グラフのプロットが要求されている時
             self.plot_graph() #プロットする
             
-    def field_absolute_cordinate(self):
+    def get_field_absolute_cordinate(self):
         """Return current absolute coordinate in the field as three-element tuple
         Returns:
         -------
@@ -253,20 +261,20 @@ class MotionLibrary:
         """
         return self.field_absolute_coordinate_x, self.field_absolute_coordinate_y
     
-    def set_plot(self):
-        """Set plot parameters"""
-        self.is_plot_required = True #プロットの要求を設定する
-        self.axis.set_xlim(-1000, 1000) #グラフのX軸の最大/最小値の設定
-        self.axis.set_ylim(-1000, 1000) #グラフのY軸の最大/最小値の設定
+    def enable_plot(self):
+        """enable plot and set plot parameters"""
+        self.use_coordinate_plot_graph = True #プロットの要求を設定する
+        self.axis.set_xlim(GRAPH_X_AXIS_MINIIMUM, GRAPH_X_AXIS_MAXIMMUM) #グラフのX軸の最大/最小値の設定
+        self.axis.set_ylim(GRAPH_Y_AXIS_MINIMUM, GRAPH_Y_AXIS_MAXIMUM) #グラフのY軸の最大/最小値の設定
         self.axis.set_aspect('equal') #グラフの形状の設定
-        self.x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
-        self.y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
-        self.axis.plot(self.x, self.y, color='C0', linestyle='-') #初期配列をプロットする(中身は0, 0)
-        plt.pause(0.001)
+        self.coordinate_history_x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
+        self.coordinate_history_y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
+        self.axis.plot(self.coordinate_history_x, self.coordinate_history_y, color='C0', linestyle='-') #初期配列をプロットする(中身は0, 0)
+        plt.pause(0.001) #プロットしたものを表示するための待ち時間
         
     def plot_graph(self):
         """Plot robot path"""
-        self.x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入
-        self.y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入
-        self.axis.plot(self.x, self.y, color='C0', linestyle='-') #配列をプロットする
-        plt.pause(0.001)
+        self.coordinate_history_x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入
+        self.coordinate_history_y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入
+        self.axis.plot(self.coordinate_history_x, self.coordinate_history_y, color='C0', linestyle='-') #配列をプロットする
+        plt.pause(0.001) #プロットしたものを表示するための待ち時間
