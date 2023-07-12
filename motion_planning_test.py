@@ -33,7 +33,7 @@ while True:
     if cv2.waitKey(image_display_delay_ms) & 0xFF == ord('q'):
         break
     
-    if MOTION.button_state() == False:
+    if MOTION.check_button_pressed_state() == False:
         MOTION.walk_forward_continue()
     
     if angle != 0:
@@ -53,9 +53,9 @@ while True:
             MOTION.stop_motion()
             MOTION.walk_sideway((distance_from_the_edge_mm-DISTANCE_FROM_THE_EDGE_DEFAULT_MM))
     
-    if MOTION.button_state() == True:
+    if MOTION.check_button_pressed_state() == True:
         MOTION.calculate_field_coordinate((finish-start))
     
     start = time.time()
         
-    print(MOTION.field_absolute_cordinate())
+    print(MOTION.get_field_absolute_cordinate())
