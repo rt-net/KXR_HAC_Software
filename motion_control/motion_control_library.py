@@ -214,39 +214,39 @@ class MotionLibrary:
         """Calculate current coordinate in the field by IMU based dead reckoning
         Parameters:
         ----------
-        motion_type_or_time: char or float
+        motion_type_or_duration: char or float
                              type of motion (char)
                              time in which the motion is played (float)
         """
         self.field_absolute_angle = self.get_body_angle()[0] #IMUの価を読み込む
-        if motion_type_or_time == "LEFT":
+        if motion_type_or_duration == "LEFT":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
                                              + math.cos(math.radians(self.field_absolute_angle))\
                                              * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量 = 負]を加算
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
                                              + math.sin(math.radians(self.field_absolute_angle))\
                                              * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量]を加算
-        elif motion_type_or_time == "RIGHT":
+        elif motion_type_or_duration == "RIGHT":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
                                              + math.cos(math.radians(self.field_absolute_angle))\
                                              * (motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[cos(θ)*一歩の移動量]を加算
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
                                              + math.sin(math.radians(self.field_absolute_angle))\
                                              * (-motion_control.parameters.SIDE_SINGLE_STEP_TRAVEL) #自己位置に[sin(θ)*一歩の移動量 = 負]を加算
-        elif motion_type_or_time == "FORWARD":
+        elif motion_type_or_duration == "FORWARD":
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
                                              + math.sin(math.radians(self.field_absolute_angle))\
                                              * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
                                              + math.cos(math.radians(self.field_absolute_angle))\
                                              * (motion_control.parameters.FORWARD_SINGLE_STEP_TRAVEL) #フィールド座標系に置ける自身の位置を更新
-        elif type(motion_type_or_time) == float:
+        elif type(motion_type_or_duration) == float:
             self.field_absolute_coordinate_x = self.field_absolute_coordinate_x\
                                              + math.sin(math.radians(self.field_absolute_angle))\
-                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
+                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_duration) #フィールド座標系に置ける自身の位置を更新
             self.field_absolute_coordinate_y = self.field_absolute_coordinate_y\
                                              + math.cos(math.radians(self.field_absolute_angle))\
-                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_time) #フィールド座標系に置ける自身の位置を更新
+                                             * (motion_control.parameters.FORWARD_1_SECOND_TRAVEL*motion_type_or_duration) #フィールド座標系に置ける自身の位置を更新
         else:
             print("coordinate calculation error")
 
