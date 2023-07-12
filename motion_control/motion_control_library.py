@@ -210,7 +210,7 @@ class MotionLibrary:
                         break
                 step_counter = step_counter+1
                 
-    def calculate_field_coordinate(self, motion_type_or_time):
+    def calculate_field_coordinate(self, motion_type_or_duration):
         """Calculate current coordinate in the field by IMU based dead reckoning
         Parameters:
         ----------
