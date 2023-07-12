@@ -42,30 +42,46 @@ class MotionPlanningLibrary:
         """collect all vision data
         """
         self.VISION.calibrate_img()
-        self.angle, self.slope, self.intercept = self.VISION.detect_edge_using_numpy_calc()
+        self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
         self.result_image = self.VISION.display_resultimg()
+        
+    def align_with_field_edge(self):
+        """align robot with field edge
+        """
+        self.get_vision_all() #カメラ情報取得
+        
+        if self.edge_angle != 0: #エッジのアングルが0以外の時→エッジが存在する時
+            self.MOTION.turn(angle) #エッジと並ぶ角度まで旋回
+        
+        self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体中心までの距離を計算
+        
+        if self.distance_from_the_edge_mm < parameters.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameters.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
+            if self.edge_angle > 0:
+                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+            else:
+                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
         
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
         self.get_vision_all()
-        #print(self.angle)
+        #print(self.edge_angle)
         
         if self.MOTION.is_button_pressed == False:
             self.MOTION.walk_forward_continue()
             
-        if self.angle != 0:
+        if self.edge_angle != 0:
             self.MOTION.stop_motion()
-            # self.MOTION.turn(self.angle)
-            self.calculate_distance_from_the_edge_mm(self.slope, self.intercept)
-            self.MOTION.turn(self.angle)
+            # self.MOTION.turn(self.edge_angle)
+            self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
+            self.MOTION.turn(self.edge_angle)
         
         if self.distance_from_the_edge_mm < parameters.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameters.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
             self.MOTION.stop_motion()
 
-            if self.angle > 0:
+            if self.edge_angle > 0:
                 self.MOTION.stop_motion()
                 self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
             else:
