@@ -1,2 +1,5 @@
 __pycache__/
 *.swp
+HTN_planner_test.py
+HTN_planner_sample.py
+htn.py
