@@ -151,7 +151,7 @@ class VisionLibrary:
         return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
        
     def detect_ball(self): #ボール検出の関数
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み            
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, vision.parameters.BALL_COLOR_LOWER, vision.parameters.BALL_COLOR_UPPER) #ボール色をマスク
         ball_pixel_area = cv2.countNonZero(frame_mask) #ボールのマスクの画素数を取得

@@ -128,9 +128,6 @@ class MotionPlanningLibrary:
         
         self.update_distance_to_ball() #ボールとの位置関係をアップデート
         
-        
-        
-        
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得
             self.distance_to_ball_x_mm = self.ball_coordinate_x-(BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
@@ -138,4 +135,20 @@ class MotionPlanningLibrary:
             self.angle_to_ball_degrees = math.degrees(math.tan(self.distance_to_ball_x_mm/self.distance_to_ball_y_mm)) #ロボット正面からボールへの角度を計算
         
     def display_image(self):
-        return self.result_image            
+        return self.result_image
+    
+
+class WorldState:
+    def __init__(self, **kwargs):
+        self.state = kwargs
+    
+    def update_state(self, new_state):
+        for name, effect in new_state.items():
+            self.state[name] = effect
+            
+
+world_state = WorldState(is_ball_in_sight=False,
+                     have_touched_ball=False,
+                     have_entered_goal=False)
+
+
