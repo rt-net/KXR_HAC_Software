@@ -190,16 +190,16 @@ class VisionLibrary:
         if left_corner_pixel_coordinate[0].any(): #左コーナーが検出されているとき
             self.corner_pixel_coordinate_y = sum(left_corner_pixel_coordinate[0])/len(left_corner_pixel_coordinate[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
             self.corner_pixel_coordinate_x = sum(left_corner_pixel_coordinate[1])/len(left_corner_pixel_coordinate[1]) #左コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
-            self.corner_type = 1 #コーナー種別を1に設定
+            self.corner_type = "RIGHT" #コーナー種別を1に設定
         elif right_corner_pixel_coordinate[0].any(): #右コーナーが検出されているとき
             self.corner_pixel_coordinate_y = sum(right_corner_pixel_coordinate[0])/len(right_corner_pixel_coordinate[0]) #右コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
             self.corner_pixel_coordinate_x = sum(right_corner_pixel_coordinate[1])/len(right_corner_pixel_coordinate[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
-            self.corner_type = 2 #コーナー種別を2に設定
+            self.corner_type = "LEFT" #コーナー種別を2に設定
         else: #何も検出されなかったとき
             #座標、コーナー種別を0に設定
             self.corner_pixel_coordinate_y = 0 
             self.corner_pixel_coordinate_x = 0
-            self.corner_type = 0
+            self.corner_type = "NONE"
             
         return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
         

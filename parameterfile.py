@@ -13,6 +13,8 @@ BALL_APPROACH_THRESHOLD = 100
 BEV_FRAME_WIDTH_MM = 345 #画角内に配置できる最大の長方形幅
 BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形幅
 
+AVOID_CORNER_MM = 200
+
 #Motion Control Parameters#####################################
 #一歩当たりの移動量の設定
 FORWARD_SINGLE_STEP_TRAVEL = 38 #前進1歩あたりの移動量(mm)
@@ -95,6 +97,6 @@ right_corner_template = cv2.resize(right_corner_template, (CORNER_TEMPLATE_HEIGH
 right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-TEMPLATE_MATCH_THRESHOLD = 0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD = 0.7#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------

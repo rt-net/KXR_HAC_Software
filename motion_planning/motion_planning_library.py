@@ -45,6 +45,7 @@ class MotionPlanningLibrary:
         self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.detect_goal()
         self.result_image = self.VISION.display_resultimg()
         
     def align_with_field_edge(self):
@@ -127,6 +128,29 @@ class MotionPlanningLibrary:
         distance_to_ball_y_mm_old = self.distance_to_ball_y_mm
         
         self.update_distance_to_ball() #ボールとの位置関係をアップデート
+        
+    def round_corner(self):
+        self.get_vision_all()
+        if self.cornertype == "NONE":
+            print("None")
+        if self.cornertype == "RIGHT":
+            self.MOTION.turn(80)
+            self.MOTION.walk_sideway(-parameterfile.AVOID_CORNER_MM)
+            #self.MOTION.walk_forward(self.corner_y_coordinate)
+            #self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
+        if self.cornertype == "LEFT":
+            self.MOTION.turn(-80)
+            self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
+            # self.MOTION.walk_sideway(100)
+            # self.MOTION.walk_forward(self.corner_y_coordinate)
+            # self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
+            # self.MOTION.turn(-90)
+            
+    def cross_goal(self):
+        self.get_vision_all()
+        self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
+        
+        print(self.distance_from_the_edge)
         
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得
