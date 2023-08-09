@@ -344,3 +344,99 @@ class VisionLibrary:
             self.is_found_edge = True
             
         return self.angle, self.slope, self.intercept #エッジ角度、エッジ切片を返す
+    
+    def detect_goal(self):
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
+        
+        # v = 1
+        
+        # frame[:,:,(2)] = frame[:,:,(2)]*v  # 明度の計算
+        
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_LOWER, parameterfile.GOAL_COLOR_UPPER)   #エッジ赤線をマスク
+
+        blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE_GOAL) #ぼかしフィルタ
+        line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
+
+        line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
+        
+        self.goalline_angle = 0 #エッジ角度の初期値
+        self.goalline_slope = 0 
+        self.goalline_intercept = 0 #a、bどちらも0を初期値
+        
+        if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
+    
+            field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
+            
+            dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
+            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
+            
+            lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
+            LINE_LENGTH = 1000 #描画する線の長さ
+            rho_total = 0
+            theta_total = 0
+
+            if type(lines) == np.ndarray: #エッジが検出されている時
+                theta_std_dev = np.nanstd(lines, 0)
+                theta_std_dev = theta_std_dev[0][1] #θの標準偏差を得る
+                
+                #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
+                #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
+                line_parameter_list = lines[:,0]
+                rho = line_parameter_list[:,0]
+                theta = line_parameter_list[:,1]
+                
+                if theta_std_dev < 1: #θの標準偏差が1未満である時
+                    theta_list = theta
+                    rho_list = rho
+                else: #θの標準偏差が1以上の時                 
+                    theta_list = np.where(theta>math.pi/2, theta-math.pi, theta)
+                    rho_list = np.where(theta>math.pi/2, -rho, rho)
+                
+                rho_average = np.average(rho_list)
+                theta_average = np.average(theta_list) 
+                                       
+                a = math.cos(theta_average)
+                b = math.sin(theta_average)
+                x0 = a * rho_average
+                y0 = b * rho_average
+                
+                self.goalline_x1_average = (x0 - LINE_LENGTH * b)
+                self.goalline_x2_average = (x0 + LINE_LENGTH * b)
+                self.goalline_y1_average = (y0 + LINE_LENGTH * a)
+                self.goalline_y2_average = (y0 - LINE_LENGTH * a)           
+                
+                self.goalline_slope = (self.goalline_y2_average-self.goalline_y1_average)/(self.goalline_x2_average-self.goalline_x1_average) #傾きを導出
+                self.goalline_intercept = self.goalline_y1_average - self.goalline_slope*self.goalline_x1_average #切片を導出
+                
+                self.goalline_angle = int(math.degrees(math.atan(-(self.goalline_y2_average-self.goalline_y1_average)/(self.goalline_x2_average-self.goalline_x1_average)))) #角度の計算(度)
+
+                #線の角度について機体前後方向と平行が0度になるように計算
+                if self.goalline_angle < 0:
+                    self.goalline_angle = -(self.goalline_angle + 90) 
+                else:
+                    self.goalline_angle = -(self.goalline_angle - 90)
+                    
+                # #見えている線の合成の描画
+                # cv2.line(frame_mask, 
+                #         (int(self.goalline_x1_average), int(self.goalline_y1_average)), 
+                #         (int(self.goalline_x2_average), int(self.goalline_y2_average)), 
+                #         (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
+                
+                # #線の角度(度)の画像への書き込み
+                # cv2.putText(frame_mask,
+                #             text=str(self.goalline_angle),
+                #             org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
+                #             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                #             fontScale=0.6,
+                #             color=(0, 255, 0),
+                #             thickness=2,
+                #             lineType=cv2.LINE_4)
+                
+        if self.goalline_slope == 0 and self.goalline_intercept == 0:
+            self.is_found_goal = False
+        else:
+            self.is_found_goal = True
+        
+        return self.goalline_angle, self.goalline_slope, self.goalline_intercept #エッジ角度、エッジ切片を返す
