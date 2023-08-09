@@ -45,7 +45,7 @@ class MotionPlanningLibrary:
         self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
-        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.detect_goal()
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         self.result_image = self.VISION.display_resultimg()
         
     def align_with_field_edge(self):
@@ -54,7 +54,7 @@ class MotionPlanningLibrary:
         self.get_vision_all() #画像情報取得
         
         if self.edge_angle != 0: #エッジのアングルが0以外の時→エッジが存在する時
-            self.MOTION.turn(angle) #エッジと並ぶ角度まで旋回
+            self.MOTION.turn(round(self.edge_angle*0.8)) #エッジと並ぶ角度まで旋回
         
         self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体中心までの距離を計算
         
@@ -69,25 +69,23 @@ class MotionPlanningLibrary:
         """
         self.get_vision_all()
         #print(self.edge_angle)
+        if self.edge_angle != 0:
+            self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
+        
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
+            self.MOTION.stop_motion()
+            self.align_with_field_edge()
+            
+        if self.ball_coordinate_x != 0:
+            self.MOTION.stop_motion()
+            self.approach_to_ball()
         
         if self.MOTION.is_button_pressed == False:
-            self.MOTION.walk_forward_continue()
-            
-        if self.edge_angle != 0:
+            self.MOTION.walk_forward_continue()        
+                
+        if self.cornertype != "NONE":
             self.MOTION.stop_motion()
-            # self.MOTION.turn(self.edge_angle)
-            self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
-            self.MOTION.turn(self.edge_angle)
-        
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
-            self.MOTION.stop_motion()
-
-            if self.edge_angle > 0:
-                self.MOTION.stop_motion()
-                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
-            else:
-                self.MOTION.stop_motion()
-                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+            self.round_corner()
                 
         print("1")
                 
@@ -134,12 +132,12 @@ class MotionPlanningLibrary:
         if self.cornertype == "NONE":
             print("None")
         if self.cornertype == "RIGHT":
-            self.MOTION.turn(80)
-            self.MOTION.walk_sideway(-parameterfile.AVOID_CORNER_MM)
+            self.MOTION.turn(90)
+            self.MOTION.walk_sideway(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate)
             #self.MOTION.walk_forward(self.corner_y_coordinate)
             #self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
         if self.cornertype == "LEFT":
-            self.MOTION.turn(-80)
+            self.MOTION.turn(-90)
             self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
             # self.MOTION.walk_sideway(100)
             # self.MOTION.walk_forward(self.corner_y_coordinate)
@@ -148,9 +146,17 @@ class MotionPlanningLibrary:
             
     def cross_goal(self):
         self.get_vision_all()
-        self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
-        
-        print(self.distance_from_the_edge)
+        if self.goalline_angle != 0:
+            self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
+            print("angle", self.goalline_angle)
+            print(self.distance_from_the_edge_mm)
+            
+            if self.goalline_angle > 0:
+                self.MOTION.turn(-(90-self.goalline_angle))
+            else:
+                self.MOTION.turn(90+self.goalline_angle)
+            
+            self.MOTION.walk_forward(self.distance_from_the_edge_mm+200)
         
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得
