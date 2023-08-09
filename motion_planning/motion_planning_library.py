@@ -145,10 +145,19 @@ class WorldState:
     def update_state(self, new_state):
         for name, effect in new_state.items():
             self.state[name] = effect
-            
+    
+
+class GetWorldState:
+    def __init__(self):
+        self.VISION = VisionLibrary()
+    
+    def get_vision_all():
+        self.VISION.calibrate_img()
+        self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
+
 
 world_state = WorldState(is_ball_in_sight=False,
                      have_touched_ball=False,
                      have_entered_goal=False)
-
-
