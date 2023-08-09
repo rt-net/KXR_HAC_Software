@@ -1,30 +1,30 @@
 import math
 import time
 import sys
+import os
 
 import numpy as np
 
 from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
-from motion_planning import parameters
 
-BEV_FRAME_WIDTH_MM = 345 #画角内に配置できる最大の長方形幅
-BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形幅
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import parameterfile
 
 class MotionPlanningLibrary:
     def __init__(self):
         self.VISION = VisionLibrary()
         self.MOTION = MotionLibrary()
         
-        self.distance_from_the_edge_mm = parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
+        self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
         
         print("[行動計画の初期化成功]")
         
     def calculate_distance_from_the_edge_mm(self, slope, intercept):
         """calculate current distance from robot-cog to edge
         """
-        Ax = BEV_FRAME_WIDTH_MM/2
-        Ay = BEV_FRAME_HEIGHT_MM + parameters.FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE
+        Ax = parameterfile.BEV_FRAME_WIDTH_MM/2
+        Ay = parameterfile.BEV_FRAME_HEIGHT_MM + parameterfile.FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE
         
         Bx = (Ay-intercept)/slope
         By = Ay
@@ -57,11 +57,11 @@ class MotionPlanningLibrary:
         
         self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体中心までの距離を計算
         
-        if self.distance_from_the_edge_mm < parameters.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameters.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
             if self.edge_angle > 0:
-                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
             else:
-                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
         
     def left_hand_approach(self):
         """execute a loop of left hand approach
@@ -78,15 +78,15 @@ class MotionPlanningLibrary:
             self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
             self.MOTION.turn(self.edge_angle)
         
-        if self.distance_from_the_edge_mm < parameters.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameters.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM:
             self.MOTION.stop_motion()
 
             if self.edge_angle > 0:
                 self.MOTION.stop_motion()
-                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+                self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
             else:
                 self.MOTION.stop_motion()
-                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameters.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+                self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
                 
         print("1")
                 
@@ -104,7 +104,7 @@ class MotionPlanningLibrary:
             
             self.update_distance_to_ball() #ボールとの位置関係をアップデート
             
-            if self.distance_to_ball_y_mm < parameters.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
+            if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
                 self.MOTION.stop_motion() #前進を終了
                 self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
                 
@@ -130,8 +130,8 @@ class MotionPlanningLibrary:
         
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得
-            self.distance_to_ball_x_mm = self.ball_coordinate_x-(BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
-            self.distance_to_ball_y_mm = BEV_FRAME_HEIGHT_MM - self.ball_coordinate_y #ロボット中心からボールへのy方向距離
+            self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
+            self.distance_to_ball_y_mm = parameterfile.BEV_FRAME_HEIGHT_MM - self.ball_coordinate_y #ロボット中心からボールへのy方向距離
             self.angle_to_ball_degrees = math.degrees(math.tan(self.distance_to_ball_x_mm/self.distance_to_ball_y_mm)) #ロボット正面からボールへの角度を計算
         
     def display_image(self):

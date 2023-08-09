@@ -1,10 +1,13 @@
 import math
 import time
+import sys
+import os
 
 import cv2
 import numpy as np
 
-import vision.parameters
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import parameterfile
 
 def decode_fourcc(v): #デコード用関数 動画コーデック(FourCC)はfloatで表現されているためこの関数が必要
     v = int(v) #intにキャスト(型変換)
@@ -32,9 +35,9 @@ class VisionLibrary:
 
         # フォーマット・解像度・FPSの設定
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y','U','Y','V')) #フォーマット指定
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, vision.parameters.CAMERA_FRAME_WIDTH) #幅指定
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vision.parameters.CAMERA_FRAME_HEIGHT) #高さ指定
-        self.cap.set(cv2.CAP_PROP_FPS, vision.parameters.CAMERA_FPS) #FPS指定
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, parameterfile.CAMERA_FRAME_WIDTH) #幅指定
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, parameterfile.CAMERA_FRAME_HEIGHT) #高さ指定
+        self.cap.set(cv2.CAP_PROP_FPS, parameterfile.CAMERA_FPS) #FPS指定
 
         # フォーマット・解像度・FPSの取得
         fourcc = decode_fourcc(self.cap.get(cv2.CAP_PROP_FOURCC)) #動画コーデックをデコードしたものを取得
@@ -59,18 +62,18 @@ class VisionLibrary:
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
         mtx, dist = load_calibration_file(self.MTX_PATH, self.DIST_PATH) #キャリブレーションパラメータ配列を得る
         frame_undistort = cv2.undistort(frame, mtx, dist, None) # パラメータを元に画像補正
-        lane_shape = np.float32([vision.parameters.BEV_TOP_LEFT, 
-                                 vision.parameters.BEV_TOP_RIGHT, 
-                                 vision.parameters.BEV_BOTTOM_LEFT, 
-                                 vision.parameters.BEV_BOTTOM_RIGHT]) #鳥瞰図変換のパラメータ　画角内に4つの角が収まる長方形を置いたときの角の場所
+        lane_shape = np.float32([parameterfile.BEV_TOP_LEFT, 
+                                 parameterfile.BEV_TOP_RIGHT, 
+                                 parameterfile.BEV_BOTTOM_LEFT, 
+                                 parameterfile.BEV_BOTTOM_RIGHT]) #鳥瞰図変換のパラメータ　画角内に4つの角が収まる長方形を置いたときの角の場所
         img_shape = np.float32([(0,0),
-                                (vision.parameters.BEV_FRAME_WIDTH,0),
-                                (0,vision.parameters.BEV_FRAME_HEIGHT),
-                                (vision.parameters.BEV_FRAME_WIDTH, vision.parameters.BEV_FRAME_HEIGHT)]) #上記長方形の大きさ
+                                (parameterfile.BEV_FRAME_WIDTH,0),
+                                (0,parameterfile.BEV_FRAME_HEIGHT),
+                                (parameterfile.BEV_FRAME_WIDTH, parameterfile.BEV_FRAME_HEIGHT)]) #上記長方形の大きさ
         BEV_transform_parameter = cv2.getPerspectiveTransform(lane_shape, img_shape) #鳥瞰図変換パラメータMを得る
         self.BEV = cv2.warpPerspective(frame_undistort, 
                                        BEV_transform_parameter, 
-                                       (vision.parameters.BEV_FRAME_WIDTH, vision.parameters.BEV_FRAME_HEIGHT)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
+                                       (parameterfile.BEV_FRAME_WIDTH, parameterfile.BEV_FRAME_HEIGHT)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
         
         return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
         
@@ -78,9 +81,9 @@ class VisionLibrary:
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, vision.parameters.FIELD_COLOR_LOWER, vision.parameters.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
 
-        blur = cv2.medianBlur(frame_mask,vision.parameters.BLUR_FILTER_SIZE) #ぼかしフィルタ
+        blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
 
         line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
@@ -89,7 +92,7 @@ class VisionLibrary:
         self.edge_a = 0 
         self.edge_b = 0 #a、bどちらも0を初期値
         
-        if line_pixel_area > vision.parameters.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+        if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
     
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
@@ -153,12 +156,12 @@ class VisionLibrary:
     def detect_ball(self): #ボール検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, vision.parameters.BALL_COLOR_LOWER, vision.parameters.BALL_COLOR_UPPER) #ボール色をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_LOWER, parameterfile.BALL_COLOR_UPPER) #ボール色をマスク
         ball_pixel_area = cv2.countNonZero(frame_mask) #ボールのマスクの画素数を取得
         ball_center_of_gravity = cv2.moments(frame_mask, False) #ボールの重心座標を取得
         
         #もしボール画素数が存在判定の閾値を超えていたら
-        if ball_pixel_area > vision.parameters.BALL_PIXEL_AREA_THRESHOLD:
+        if ball_pixel_area > parameterfile.BALL_PIXEL_AREA_THRESHOLD:
             self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]) , int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
         else:
             self.ball_pixel_coordinate_x = 0
@@ -174,15 +177,15 @@ class VisionLibrary:
     def detect_corner(self): #コーナー検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, vision.parameters.FIELD_COLOR_LOWER, vision.parameters.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
         
         # 処理対象画像の各画素に対して、テンプレート画像との類似度を算出する
-        match_left = cv2.matchTemplate(frame_mask, vision.parameters.LEFT_CORNER_TEMPLATE, cv2.TM_CCOEFF_NORMED)
-        match_right = cv2.matchTemplate(frame_mask, vision.parameters.RIGHT_CORNER_TEMPLATE, cv2.TM_CCOEFF_NORMED)
+        match_left = cv2.matchTemplate(frame_mask, parameterfile.LEFT_CORNER_TEMPLATE, cv2.TM_CCOEFF_NORMED)
+        match_right = cv2.matchTemplate(frame_mask, parameterfile.RIGHT_CORNER_TEMPLATE, cv2.TM_CCOEFF_NORMED)
        
         # 閾値に基づき類似度の高い画素を得る　値はlist
-        left_corner_pixel_coordinate = np.where(match_left >= vision.parameters.TEMPLATE_MATCH_THRESHOLD)
-        right_corner_pixel_coordinate = np.where(match_right >= vision.parameters.TEMPLATE_MATCH_THRESHOLD)
+        left_corner_pixel_coordinate = np.where(match_left >= parameterfile.TEMPLATE_MATCH_THRESHOLD)
+        right_corner_pixel_coordinate = np.where(match_right >= parameterfile.TEMPLATE_MATCH_THRESHOLD)
         
         if left_corner_pixel_coordinate[0].any(): #左コーナーが検出されているとき
             self.corner_pixel_coordinate_y = sum(left_corner_pixel_coordinate[0])/len(left_corner_pixel_coordinate[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
@@ -243,7 +246,7 @@ class VisionLibrary:
         if self.corner_type != 0: #コーナーが存在する時 corner_type == 0 の時は存在しない
             cv2.rectangle(result, 
                           (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
-                          (int(self.corner_pixel_coordinate_x)+vision.parameters.CORNER_TEMPLATE_WIDTH, int(self.corner_pixel_coordinate_y)+vision.parameters.CORNER_TEMPLATE_HEIGHT), 
+                          (int(self.corner_pixel_coordinate_x)+parameterfile.CORNER_TEMPLATE_WIDTH, int(self.corner_pixel_coordinate_y)+parameterfile.CORNER_TEMPLATE_HEIGHT), 
                           (255, 255, 0), 2) 
             if self.corner_type == 1:
                 cv2.putText(result,
@@ -270,9 +273,9 @@ class VisionLibrary:
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, vision.parameters.FIELD_COLOR_LOWER, vision.parameters.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
 
-        blur = cv2.medianBlur(frame_mask,vision.parameters.BLUR_FILTER_SIZE) #ぼかしフィルタ
+        blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
 
         line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
@@ -281,7 +284,7 @@ class VisionLibrary:
         self.slope = 0 
         self.intercept = 0 #a、bどちらも0を初期値
         
-        if line_pixel_area > vision.parameters.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+        if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
     
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
