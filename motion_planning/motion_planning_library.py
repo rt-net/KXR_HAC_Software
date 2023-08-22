@@ -67,27 +67,29 @@ class MotionPlanningLibrary:
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
-        self.get_vision_all()
-        #print(self.edge_angle)
-        if self.edge_angle != 0:
-            self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
-        
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
-            self.MOTION.stop_motion()
-            self.align_with_field_edge()
+        self.MOTION.stop_motion() #前進を終了
+        while True:
+            self.get_vision_all()
+            #print(self.edge_angle)
+            if self.edge_angle != 0:
+                self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
             
-        if self.ball_coordinate_x != 0:
-            self.MOTION.stop_motion()
-            self.approach_to_ball()
-        
-        if self.MOTION.is_button_pressed == False:
-            self.MOTION.walk_forward_continue()        
+            if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
+                self.MOTION.stop_motion()
+                self.align_with_field_edge()
+            
+            if self.MOTION.is_button_pressed == False:
+                self.MOTION.walk_forward_continue()        
+                    
+            if self.cornertype != "NONE":
+                self.MOTION.stop_motion()
+                self.round_corner()
                 
-        if self.cornertype != "NONE":
-            self.MOTION.stop_motion()
-            self.round_corner()
+            if self.ball_coordinate_x != 0:
+                self.MOTION.stop_motion()
+                break
+                #self.approach_to_ball()
                 
-        print("1")
                 
     def approach_to_ball(self):
         """execute full ball approach process
@@ -120,7 +122,26 @@ class MotionPlanningLibrary:
                 self.MOTION.stop_motion() #前進を終了
                 print("Ball Lost")
                 break          
+            
+    def turn_to_ball_2(self):
+        self.MOTION.stop_motion() #前進を終了
+        self.update_distance_to_ball()
+        self.MOTION.turn(self.angle_to_ball_degrees) #ボールに正対するように旋回
+        
+    def walk_to_ball_2(self):
+        while True:
+            if self.MOTION.is_button_pressed == False:
+                self.MOTION.walk_forward_continue() #ボールに向けて前進開始
+            
+            self.update_distance_to_ball() #ボールとの位置関係をアップデート
+            
+            if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
+                self.MOTION.stop_motion() #前進を終了
+                self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
+                break
+
     
+        
     def is_ball_touched(self):
         distance_to_ball_x_mm_old = self.distance_to_ball_x_mm
         distance_to_ball_y_mm_old = self.distance_to_ball_y_mm
@@ -163,6 +184,10 @@ class MotionPlanningLibrary:
             self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
             self.distance_to_ball_y_mm = parameterfile.BEV_FRAME_HEIGHT_MM - self.ball_coordinate_y #ロボット中心からボールへのy方向距離
             self.angle_to_ball_degrees = math.degrees(math.tan(self.distance_to_ball_x_mm/self.distance_to_ball_y_mm)) #ロボット正面からボールへの角度を計算
+            
+    def touch_ball(self):
+        self.MOTION.stop_motion() #前進を終了
+        self.MOTION.touch_ball()
         
     def display_image(self):
         return self.result_image
