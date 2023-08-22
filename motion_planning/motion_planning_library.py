@@ -54,7 +54,7 @@ class MotionPlanningLibrary:
         self.get_vision_all() #画像情報取得
         
         if self.edge_angle != 0: #エッジのアングルが0以外の時→エッジが存在する時
-            self.MOTION.turn(round(self.edge_angle*0.8)) #エッジと並ぶ角度まで旋回
+            self.MOTION.turn(round(self.edge_angle)) #エッジと並ぶ角度まで旋回
         
         self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体中心までの距離を計算
         
@@ -70,26 +70,25 @@ class MotionPlanningLibrary:
         self.MOTION.stop_motion() #前進を終了
         while True:
             self.get_vision_all()
-            #print(self.edge_angle)
+
             if self.edge_angle != 0:
                 self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
             
             if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
                 self.MOTION.stop_motion()
                 self.align_with_field_edge()
-            
+                
             if self.MOTION.is_button_pressed == False:
-                self.MOTION.walk_forward_continue()        
-                    
+                self.MOTION.walk_forward_continue()   
+                           
             if self.cornertype != "NONE":
                 self.MOTION.stop_motion()
+                print("Round corner")
                 self.round_corner()
                 
             if self.ball_coordinate_x != 0:
                 self.MOTION.stop_motion()
                 break
-                #self.approach_to_ball()
-                
                 
     def approach_to_ball(self):
         """execute full ball approach process
@@ -154,7 +153,8 @@ class MotionPlanningLibrary:
             print("None")
         if self.cornertype == "RIGHT":
             self.MOTION.turn(90)
-            self.MOTION.walk_sideway(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate)
+            print(-(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate))
+            self.MOTION.walk_sideway(-self.corner_y_coordinate)
             #self.MOTION.walk_forward(self.corner_y_coordinate)
             #self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
         if self.cornertype == "LEFT":
