@@ -25,6 +25,27 @@ def extend_arm():
 def walk_into_goal():
     PLANNING.cross_goal()
 
+def check_know_ball_pose():
+    pass
+
+def check_facing_ball():
+    pass
+
+def check_near_ball():
+    pass
+
+def check_touched_ball():
+    pass
+
+def check_facing_goal():
+    pass
+
+def check_near_goal():
+    pass
+
+def check_in_goal():
+    pass
+
 ####WorldState####
 world_state = htn_HAC.WorldState(know_ball_pos=False,
                      facing_ball=False,
@@ -33,6 +54,13 @@ world_state = htn_HAC.WorldState(know_ball_pos=False,
                      facing_goal=False,
                      near_goal=False,
                      in_goal=False) #htn_HAC.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
+world_state.set_update_functions(know_ball_pos = check_know_ball_pose,
+                                 facing_ball = check_facing_ball,
+                                 near_ball = check_near_ball,
+                                 touched_ball = check_touched_ball,
+                                 facing_goal = check_facing_goal,
+                                 near_goal = check_near_goal,
+                                 in_goal = check_in_goal)
 
 ####PrimitiveTasks####
 walk_around = htn_HAC.PrimitiveTask("WalkAround") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
@@ -124,7 +152,9 @@ root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethod�
 planner = htn_HAC.Planner()
 world = copy.deepcopy(world_state)
 
-print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
-planner.make_plan([root_task], world_state)
-planner.show_plan()
-planner.execute_plan(world)
+while True:
+    print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
+    world.update_state_with_sensor_data()
+    planner.make_plan([root_task], world)
+    planner.show_plan()
+    planner.execute_plan(world)

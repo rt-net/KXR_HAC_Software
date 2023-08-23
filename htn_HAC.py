@@ -12,10 +12,27 @@ import numpy as np
 class WorldState:
     def __init__(self, **kwargs): #world_stateの初期化 **kwargsはキーワード引数を辞書として受け取ること　名称がkwargsなのは慣例
         self.state = kwargs #辞書型のworld_state初期値をself.stateに格納
+
+    def set_update_functions(self, **kwargs):
+        assert len(kwargs) == len(self.state)
+        self.state_check_list = kwargs
+
+    def update_state_for_planner(self, new_state):
+        for name, effect in new_state.items():
+            self.state[name] = effect
     
-    def update_state(self, new_state): #world_stateの要素の更新を行う
-        for name, effect in new_state.items(): #new_stateの持つ要素について繰り返し　new_stateは辞書型 {'know_ball_pos':True}のように入っている
-            self.state[name] = effect #辞書型world_stateの同じ名前を持つ要素を更新
+    def update_state_with_sensor_data(self): 
+        for state_name, update_function in state_check_list.items(): 
+            print("WorldState: updating", state_name)
+            self.state[state_name] = update_function()
+
+    def check_if_state_changed(self):
+        old_state = copy.deepcopy(self.state)
+        self.update_state_with_sensor_data()
+        if self.state != old_state:
+            return True
+        else:
+            return False
 
 
 class CompoundTask:
@@ -41,8 +58,14 @@ class Method:
 
 
 class PrimitiveTask:
+    STATUS_FAILED = 0
+    STATUS_ACTIVE = 1
+    STATUS_COMPLETE = 2
+    STATUS_INITIALIZED = 3
+
     def __init__(self,name):
         self.name = name #PrimitiveTaskの名称をself.nameに代入　"SearchBall"のように渡されているのでcharで入る
+        self.status = PrimitiveTask.STATUS_INITIALIZED
         self.preconditions = {} #辞書型でpreconditionsを生成
 
     def set_precondition(self, **kwargs):
@@ -53,9 +76,23 @@ class PrimitiveTask:
         
     def set_action(self, action):
         self.action = action
+
+    def monitor_task_status(self, world):
+        world.update_state_with_sensor_data()
+
+        if self.preconditions in world.state:
+            return PrimitiveTask.STATUS_ACTIVE
+        elif self.effects in world.state:
+            return PrimitiveTask.STATUS_COMPLETE
+        else:
+            return PrimitiveTask.STATUS_FAILED
         
-    def run_action(self):
-        self.action()
+    def run_action(self, world):
+        self.status = PrimitiveTask.STATUS_ACTIVE
+
+        while self.status == PrimitiveTask.STATUS_ACTIVE:
+            self.status = self.monitor_task_status(world)
+            self.action()
 
 
 class PlanningHistory: #計画の履歴を作る
@@ -87,7 +124,9 @@ class FinalPlan:
 
     def run(self, world):
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            world.update_state(task.effects) #それぞれのタスクのeffectについてworld_stateを順次更新
+            task.run_action(world)
+            if task.status == PrimitiveTask.STATUS_FAILED:
+                break
 
 
 class Planner:
@@ -125,8 +164,7 @@ class Planner:
             elif current_task.__class__.__name__ == 'PrimitiveTask': #もしPrimitiveTaskであれば
                 print("current primitive task name", current_task.name)
                 if self.check_task_precond(current_task): #現在のタスクのpreconditionを確認
-                    # current_task.run_action()
-                    self.working_state.update_state(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
+                    self.working_state.update_state_for_planner(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
                     self.f_plan.add(current_task) #現在のタスクをプランに追加
                 elif self.use_history: #それ以外の場合（use_historyは常にTrue）
                     tasks_to_process = tasks_to_process + self.his.restore_task() #履歴を一段階戻す
@@ -136,7 +174,6 @@ class Planner:
     def show_plan(self):
         for task in self.f_plan.tasks:
             print(task.name)
-            task.run_action()
         print("plan finish")
 
     def execute_plan(self, world):
