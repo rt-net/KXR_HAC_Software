@@ -15,24 +15,24 @@ class WorldState:
 
     def set_update_functions(self, **kwargs):
         assert len(kwargs) == len(self.state)
-        self.state_check_list = kwargs
+        self.state_check_list = kwargs #どの関数をworld_stateのアップデートに使うか指定
 
     def update_state_for_planner(self, new_state):
         for name, effect in new_state.items():
-            self.state[name] = effect
+            self.state[name] = effect #stateをnew_stateに基づいてアップデート
     
     def update_state_with_sensor_data(self): 
-        for state_name, update_function in state_check_list.items(): 
+        for state_name, update_function in self.state_check_list.items():  #state_check_listのそれぞれの内容に従いセンサーデータからstateを更新
             print("WorldState: updating", state_name)
             self.state[state_name] = update_function()
 
-    def check_if_state_changed(self):
-        old_state = copy.deepcopy(self.state)
-        self.update_state_with_sensor_data()
+    def check_if_state_changed(self): #stateが変わったか確認する
+        old_state = copy.deepcopy(self.state) #old_stateは呼び出し時のstate
+        self.update_state_with_sensor_data() #センサーデータによってstateを更新
         if self.state != old_state:
-            return True
+            return True #stateが変わっていればTrueを返す
         else:
-            return False
+            return False #変わっていなければFalseを返す
 
 
 class CompoundTask:
@@ -80,9 +80,9 @@ class PrimitiveTask:
     def monitor_task_status(self, world):
         world.update_state_with_sensor_data()
 
-        if self.preconditions in world.state:
+        if set(self.preconditions).issubset(set(world.state)):
             return PrimitiveTask.STATUS_ACTIVE
-        elif self.effects in world.state:
+        elif set(self.effects).issubset(set(world.state)): 
             return PrimitiveTask.STATUS_COMPLETE
         else:
             return PrimitiveTask.STATUS_FAILED

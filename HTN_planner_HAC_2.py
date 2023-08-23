@@ -26,7 +26,7 @@ def walk_into_goal():
     PLANNING.cross_goal()
 
 def check_know_ball_pose():
-    pass
+    return True
 
 def check_facing_ball():
     pass
