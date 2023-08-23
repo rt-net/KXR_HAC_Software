@@ -10,9 +10,6 @@ WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 200
 
 BALL_APPROACH_THRESHOLD = 100
 
-BEV_FRAME_WIDTH_MM = 345 #画角内に配置できる最大の長方形幅
-BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形幅
-
 AVOID_CORNER_MM = 200
 
 #Motion Control Parameters#####################################
@@ -53,8 +50,8 @@ BEV_TOP_RIGHT = [252, 24] #右上角
 BEV_BOTTOM_LEFT = [15, 240] #左下角
 BEV_BOTTOM_RIGHT = [315, 220] #右下角
 
-BEV_FRAME_WIDTH = 345 #画角内に配置できる最大の長方形幅
-BEV_FRAME_HEIGHT = 395 #画角内に配置できる最大の長方形高さ
+BEV_FRAME_WIDTH_MM = 345 #画角内に配置できる最大の長方形幅
+BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形高さ
 
 #--------------------------------------------------------------
 
@@ -73,6 +70,11 @@ BALL_COLOR_LOWER = np.array([5,200,180]) #ボール色の下閾値
 BALL_COLOR_UPPER = np.array([25,255,255]) #ボール色の上閾値
 
 BALL_PIXEL_AREA_THRESHOLD = 2000 #ボールの存在判定用ボール色の画素数閾値
+
+#--------------------------------------------------------------
+#ボール位置の指定
+BALL_POS_TOLERANCE_MM = 30
+BALL_POS_FROM_ROBOT = 50
 
 #--------------------------------------------------------------
 

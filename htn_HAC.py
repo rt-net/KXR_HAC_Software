@@ -87,6 +87,7 @@ class FinalPlan:
 
     def run(self, world):
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
+            task.run_action()
             world.update_state(task.effects) #それぞれのタスクのeffectについてworld_stateを順次更新
 
 
@@ -136,7 +137,6 @@ class Planner:
     def show_plan(self):
         for task in self.f_plan.tasks:
             print(task.name)
-            task.run_action()
         print("plan finish")
 
     def execute_plan(self, world):
