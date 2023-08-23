@@ -11,11 +11,12 @@ from motion_control.motion_control_library import MotionLibrary
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import parameterfile
 
+touched_ball = False
+
 class MotionPlanningLibrary:
     def __init__(self):
         self.VISION = VisionLibrary()
         self.MOTION = MotionLibrary()
-        
         self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
         
         print("[行動計画の初期化成功]")
@@ -67,28 +68,28 @@ class MotionPlanningLibrary:
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
-        self.MOTION.stop_motion() #前進を終了
-        while True:
-            self.get_vision_all()
+        # self.MOTION.stop_motion() #前進を終了
+        # while True:
+        self.get_vision_all()
 
-            if self.edge_angle != 0:
-                self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
+        if self.edge_angle != 0:
+            self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
+        
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
+            self.MOTION.stop_motion()
+            self.align_with_field_edge()
             
-            if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
-                self.MOTION.stop_motion()
-                self.align_with_field_edge()
-                
-            if self.MOTION.is_button_pressed == False:
-                self.MOTION.walk_forward_continue()   
+        if self.MOTION.is_button_pressed == False:
+            self.MOTION.walk_forward_continue()   
                            
-            if self.cornertype != "NONE":
-                self.MOTION.stop_motion()
-                print("Round corner")
-                self.round_corner()
+            # if self.cornertype != "NONE":
+            #     self.MOTION.stop_motion()
+            #     print("Round corner")
+            #     self.round_corner()
                 
-            if self.ball_coordinate_x != 0:
-                self.MOTION.stop_motion()
-                break
+            # if self.ball_coordinate_x != 0:
+            #     self.MOTION.stop_motion()
+            #     break
                 
     def approach_to_ball(self):
         """execute full ball approach process
@@ -138,8 +139,6 @@ class MotionPlanningLibrary:
                 self.MOTION.stop_motion() #前進を終了
                 self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
                 break
-
-    
         
     def is_ball_touched(self):
         distance_to_ball_x_mm_old = self.distance_to_ball_x_mm
@@ -151,19 +150,14 @@ class MotionPlanningLibrary:
         self.get_vision_all()
         if self.cornertype == "NONE":
             print("None")
-        if self.cornertype == "RIGHT":
+        elif self.cornertype == "RIGHT":
             self.MOTION.turn(90)
             print(-(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate))
             self.MOTION.walk_sideway(-self.corner_y_coordinate)
-            #self.MOTION.walk_forward(self.corner_y_coordinate)
-            #self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
-        if self.cornertype == "LEFT":
+        elif self.cornertype == "LEFT":
             self.MOTION.turn(-90)
             self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
-            # self.MOTION.walk_sideway(100)
-            # self.MOTION.walk_forward(self.corner_y_coordinate)
-            # self.MOTION.walk_forward(parameterfile.AVOID_CORNER_MM)
-            # self.MOTION.turn(-90)
+
             
     def cross_goal(self):
         self.get_vision_all()
@@ -188,6 +182,7 @@ class MotionPlanningLibrary:
     def touch_ball(self):
         self.MOTION.stop_motion() #前進を終了
         self.MOTION.touch_ball()
+        touched_ball = True
         
     def display_image(self):
         return self.result_image
@@ -211,8 +206,40 @@ class GetWorldState:
         self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
 
-
-world_state = WorldState(is_ball_in_sight=False,
-                     have_touched_ball=False,
-                     have_entered_goal=False)
+    def know_ball_pos_update():
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        if self.ball_coordinate_x != 0:
+            return True
+        else:
+            return False
+    
+    def facing_ball_update():
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
+            return True
+        else:
+            return False
+    
+    def near_ball_update():
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        if self.ball_coordinate_y > parameterfile.BEV_FRAME_HEIGHT_MM-parameterfile.BALL_POS_FROM_ROBOT:
+            return True
+        else:
+            return False
+        
+    def touched_ball_update():
+        return touched_ball
+    
+    def facing_goal_update():
+        if self.goalline_angle != 0:
+            return True
+        else:
+            return False
+    
+    def near_goal_update():
+        return True
+    
+    def in_goal_update():
+        return True

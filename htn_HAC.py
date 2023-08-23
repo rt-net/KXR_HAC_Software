@@ -124,9 +124,7 @@ class FinalPlan:
 
     def run(self, world):
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            task.run_action(world)
-            if task.status == PrimitiveTask.STATUS_FAILED:
-                break
+            world.update_state(task.effects) #それぞれのタスクのeffectについてworld_stateを順次更新
 
 
 class Planner:

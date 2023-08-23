@@ -67,13 +67,13 @@ class VisionLibrary:
                                  parameterfile.BEV_BOTTOM_LEFT, 
                                  parameterfile.BEV_BOTTOM_RIGHT]) #鳥瞰図変換のパラメータ　画角内に4つの角が収まる長方形を置いたときの角の場所
         img_shape = np.float32([(0,0),
-                                (parameterfile.BEV_FRAME_WIDTH,0),
-                                (0,parameterfile.BEV_FRAME_HEIGHT),
-                                (parameterfile.BEV_FRAME_WIDTH, parameterfile.BEV_FRAME_HEIGHT)]) #上記長方形の大きさ
+                                (parameterfile.BEV_FRAME_WIDTH_MM,0),
+                                (0,parameterfile.BEV_FRAME_HEIGHT_MM),
+                                (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)]) #上記長方形の大きさ
         BEV_transform_parameter = cv2.getPerspectiveTransform(lane_shape, img_shape) #鳥瞰図変換パラメータMを得る
         self.BEV = cv2.warpPerspective(frame_undistort, 
                                        BEV_transform_parameter, 
-                                       (parameterfile.BEV_FRAME_WIDTH, parameterfile.BEV_FRAME_HEIGHT)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
+                                       (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
         
         return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
         
@@ -206,7 +206,7 @@ class VisionLibrary:
     def display_resultimg(self):#結果画像の表示用関数
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         
-        if self.is_found_edge == True and self.corner_type == 0: #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
+        if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
             #見えている線の合成の描画
             cv2.line(result, 
                     (int(self.x1_average), int(self.y1_average)), 
@@ -243,12 +243,12 @@ class VisionLibrary:
                         thickness=2,
                         lineType=cv2.LINE_4)            
             
-        if self.corner_type != 0: #コーナーが存在する時 corner_type == 0 の時は存在しない
+        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
             cv2.rectangle(result, 
                           (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
                           (int(self.corner_pixel_coordinate_x)+parameterfile.CORNER_TEMPLATE_WIDTH, int(self.corner_pixel_coordinate_y)+parameterfile.CORNER_TEMPLATE_HEIGHT), 
                           (255, 255, 0), 2) 
-            if self.corner_type == 1:
+            if self.corner_type == "LEFT":
                 cv2.putText(result,
                             text="Left",
                             org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
@@ -257,7 +257,7 @@ class VisionLibrary:
                             color=(0, 255, 0),
                             thickness=2,
                             lineType=cv2.LINE_4)
-            elif self.corner_type == 2:
+            elif self.corner_type == "RIGHT":
                 cv2.putText(result,
                             text="Right",
                             org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
