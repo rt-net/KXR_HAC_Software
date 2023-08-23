@@ -22,9 +22,11 @@ class WorldState:
             self.state[name] = effect #stateをnew_stateに基づいてアップデート
     
     def update_state_with_sensor_data(self): 
+        print("updating world state")
         for state_name, update_function in self.state_check_list.items():  #state_check_listのそれぞれの内容に従いセンサーデータからstateを更新
-            print("WorldState: updating", state_name)
+            # print("WorldState: updating", state_name)
             self.state[state_name] = update_function()
+        print(self.state)
 
     def check_if_state_changed(self): #stateが変わったか確認する
         old_state = copy.deepcopy(self.state) #old_stateは呼び出し時のstate
@@ -79,19 +81,23 @@ class PrimitiveTask:
 
     def monitor_task_status(self, world):
         world.update_state_with_sensor_data()
-
-        if set(self.preconditions).issubset(set(world.state)):
+        
+        print(self.preconditions)
+        print(self.effects)
+        
+        if set(self.preconditions.items()).issubset(world.state.items()):
             return PrimitiveTask.STATUS_ACTIVE
-        elif set(self.effects).issubset(set(world.state)): 
+        elif set(self.effects.items()).issubset(world.state.items()): 
             return PrimitiveTask.STATUS_COMPLETE
         else:
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
         self.status = PrimitiveTask.STATUS_ACTIVE
-
         while self.status == PrimitiveTask.STATUS_ACTIVE:
+            print("in action----", self.action)
             self.status = self.monitor_task_status(world)
+            print(self.status)
             self.action()
 
 
@@ -123,9 +129,14 @@ class FinalPlan:
         self.tasks.append(task) #tasksのリストに引数となっているタスクを付け足す
 
     def run(self, world):
+        print("running")
+        print(self.tasks)
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            world.update_state(task.effects) #それぞれのタスクのeffectについてworld_stateを順次更新
-
+            print("running2")
+            task.run_action(world)
+            if task.status == PrimitiveTask.STATUS_FAILED:
+                print("Failed")
+                break
 
 class Planner:
     def __init__(self, use_history= True): #use_historyの指定が無ければTrueになる　Falseの指定があるならそのまま
@@ -170,6 +181,7 @@ class Planner:
                 print('WARNING: NO PLAN FOUND')
 
     def show_plan(self):
+        print(self.f_plan.tasks)
         for task in self.f_plan.tasks:
             print(task.name)
         print("plan finish")

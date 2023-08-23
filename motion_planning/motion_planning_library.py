@@ -24,20 +24,23 @@ class MotionPlanningLibrary:
     def calculate_distance_from_the_edge_mm(self, slope, intercept):
         """calculate current distance from robot-cog to edge
         """
-        Ax = parameterfile.BEV_FRAME_WIDTH_MM/2
-        Ay = parameterfile.BEV_FRAME_HEIGHT_MM + parameterfile.FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE
-        
-        Bx = (Ay-intercept)/slope
-        By = Ay
-        
-        Cx = Ax
-        Cy = Ax*slope+intercept
-        
-        AC = (Ay - Cy)
-        AB = (Ax - Bx)
-        BC = (AC**2 + AB**2)**(1/2)
-        
-        self.distance_from_the_edge_mm = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
+        try:
+            Ax = parameterfile.BEV_FRAME_WIDTH_MM/2
+            Ay = parameterfile.BEV_FRAME_HEIGHT_MM + parameterfile.FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE
+            
+            Bx = (Ay-intercept)/slope
+            By = Ay
+            
+            Cx = Ax
+            Cy = Ax*slope+intercept
+            
+            AC = (Ay - Cy)
+            AB = (Ax - Bx)
+            BC = (AC**2 + AB**2)**(1/2)
+            
+            self.distance_from_the_edge_mm = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
+        except:
+            self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
         
     def get_vision_all(self):
         """collect all vision data
@@ -186,60 +189,42 @@ class MotionPlanningLibrary:
         
     def display_image(self):
         return self.result_image
-    
 
-class WorldState:
-    def __init__(self, **kwargs):
-        self.state = kwargs
-    
-    def update_state(self, new_state):
-        for name, effect in new_state.items():
-            self.state[name] = effect
-    
-
-class GetWorldState:
-    def __init__(self):
-        self.VISION = VisionLibrary()
-    
-    def get_vision_all():
-        self.VISION.calibrate_img()
-        self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
-        self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
-        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
-
-    def know_ball_pos_update():
+    def check_know_ball_pos(self):
+        #print("check know ball pos")
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         if self.ball_coordinate_x != 0:
             return True
         else:
             return False
     
-    def facing_ball_update():
+    def check_facing_ball(self):
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        #print("check facing ball")
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
         else:
             return False
     
-    def near_ball_update():
+    def check_near_ball(self):
+        #print("check near ball")
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         if self.ball_coordinate_y > parameterfile.BEV_FRAME_HEIGHT_MM-parameterfile.BALL_POS_FROM_ROBOT:
             return True
         else:
             return False
         
-    def touched_ball_update():
+    def check_touched_ball(self):
         return touched_ball
     
-    def facing_goal_update():
+    def facing_goal_update(self):
         if self.goalline_angle != 0:
             return True
         else:
             return False
     
-    def near_goal_update():
+    def near_goal_update(self):
         return True
     
-    def in_goal_update():
+    def in_goal_update(self):
         return True

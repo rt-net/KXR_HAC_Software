@@ -11,12 +11,15 @@ from motion_planning.motion_planning_library import MotionPlanningLibrary
 PLANNING = MotionPlanningLibrary()
 
 def walk_in_field():
+    #print("walk in field")
     PLANNING.left_hand_approach()
 
 def turn_to_ball():
+    #print("turn to ball")
     PLANNING.turn_to_ball_2()
     
 def walk_to_ball():
+    #print("walk to ball")
     PLANNING.walk_to_ball_2()
 
 def extend_arm():
@@ -26,25 +29,25 @@ def walk_into_goal():
     PLANNING.cross_goal()
 
 def check_know_ball_pose():
-    return True
+    return PLANNING.check_know_ball_pos()
 
 def check_facing_ball():
-    pass
+    return PLANNING.check_facing_ball()
 
 def check_near_ball():
-    pass
+    return PLANNING.check_near_ball()
 
 def check_touched_ball():
-    pass
+    return PLANNING.check_touched_ball()
 
 def check_facing_goal():
-    pass
+    return False
 
 def check_near_goal():
-    pass
+    return False
 
 def check_in_goal():
-    pass
+    return False
 
 ####WorldState####
 world_state = htn_HAC.WorldState(know_ball_pos=False,
