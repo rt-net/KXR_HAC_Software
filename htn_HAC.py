@@ -41,8 +41,14 @@ class Method:
 
 
 class PrimitiveTask:
+    STATUS_FAILED = 0
+    STATUS_ACTIVE = 1
+    STATUS_COMPLETE = 2
+    STATUS_INITIALIZED = 3
+
     def __init__(self,name):
         self.name = name #PrimitiveTaskの名称をself.nameに代入　"SearchBall"のように渡されているのでcharで入る
+        self.status = PrimitiveTask.STATUS_INITIALIZED
         self.preconditions = {} #辞書型でpreconditionsを生成
 
     def set_precondition(self, **kwargs):
@@ -53,9 +59,23 @@ class PrimitiveTask:
         
     def set_action(self, action):
         self.action = action
+
+    def monitor_task_status(self, world):
+        world.update_state_with_sensor_data()
+
+        if self.preconditions in world.state:
+            return PrimitiveTask.STATUS_ACTIVE
+        elif self.effects in world.state:
+            return PrimitiveTask.STATUS_COMPLETE
+        else:
+            return PrimitiveTask.STATUS_FAILED
         
-    def run_action(self):
-        self.action()
+    def run_action(self, world):
+        self.status = PrimitiveTask.STATUS_ACTIVE
+
+        while self.status == PrimitiveTask.STATUS_ACTIVE:
+            self.status = self.monitor_task_status(world)
+            self.action()
 
 
 class PlanningHistory: #計画の履歴を作る
@@ -87,7 +107,6 @@ class FinalPlan:
 
     def run(self, world):
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            task.run_action()
             world.update_state(task.effects) #それぞれのタスクのeffectについてworld_stateを順次更新
 
 
@@ -126,8 +145,7 @@ class Planner:
             elif current_task.__class__.__name__ == 'PrimitiveTask': #もしPrimitiveTaskであれば
                 print("current primitive task name", current_task.name)
                 if self.check_task_precond(current_task): #現在のタスクのpreconditionを確認
-                    # current_task.run_action()
-                    self.working_state.update_state(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
+                    self.working_state.update_state_for_planner(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
                     self.f_plan.add(current_task) #現在のタスクをプランに追加
                 elif self.use_history: #それ以外の場合（use_historyは常にTrue）
                     tasks_to_process = tasks_to_process + self.his.restore_task() #履歴を一段階戻す
