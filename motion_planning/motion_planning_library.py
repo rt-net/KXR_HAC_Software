@@ -177,7 +177,7 @@ class MotionPlanningLibrary:
             else:
                 self.MOTION.turn(90+self.goalline_angle)
             
-            self.MOTION.walk_forward(self.distance_from_the_edge_mm+200)
+            self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
         
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得

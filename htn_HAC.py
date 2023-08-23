@@ -116,8 +116,8 @@ class Planner:
             if current_task.__class__.__name__ == 'CompoundTask': #__class__.__name__プロパティ属性はクラスの名前を持ってくる　これがもしCompundTaskであれば
                 print("current compound task name", current_task.name)
                 for method in current_task.method_list: #現在のタスクにおけるメソッドのリストについて繰り返す
-                    print("current method name", method.name)
                     if self.check_task_precond(method): #そのメソッドについてpreconditionを確認 Trueが返ってきたら（working_stateと合致していたら）
+                        print("current method name", method.name)
                         self.his.record(current_task, self.f_plan) #現在のタスクをプランに記録 PlanningHistoryクラスを用いる
                         tasks_to_process = list(method.subtasks) + tasks_to_process #実行するタスクにメソッドのsubtaskを追加
                     elif self.use_history: #それ以外の場合（use_historyは常にTrue）
@@ -125,7 +125,7 @@ class Planner:
             elif current_task.__class__.__name__ == 'PrimitiveTask': #もしPrimitiveTaskであれば
                 print("current primitive task name", current_task.name)
                 if self.check_task_precond(current_task): #現在のタスクのpreconditionを確認
-                    current_task.run_action()
+                    # current_task.run_action()
                     self.working_state.update_state(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
                     self.f_plan.add(current_task) #現在のタスクをプランに追加
                 elif self.use_history: #それ以外の場合（use_historyは常にTrue）
@@ -136,6 +136,7 @@ class Planner:
     def show_plan(self):
         for task in self.f_plan.tasks:
             print(task.name)
+            task.run_action()
         print("plan finish")
 
     def execute_plan(self, world):
