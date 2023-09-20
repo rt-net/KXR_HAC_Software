@@ -22,7 +22,7 @@ class WorldState:
             self.state[name] = effect #stateをnew_stateに基づいてアップデート
     
     def update_state_with_sensor_data(self): 
-        print("updating world state")
+        #print("Updating World State")
         for state_name, update_function in self.state_check_list.items():  #state_check_listのそれぞれの内容に従いセンサーデータからstateを更新
             # print("WorldState: updating", state_name)
             self.state[state_name] = update_function()
@@ -89,19 +89,12 @@ class PrimitiveTask:
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
-        # print("\n","-"*10+"Run Action"+"-"*10)
         self.status = PrimitiveTask.STATUS_ACTIVE
-        
         #print("in action----", self.action)
         while self.status == PrimitiveTask.STATUS_ACTIVE:
             self.action()
             self.status = self.monitor_task_status(world)
-        
-        # while self.status == PrimitiveTask.STATUS_ACTIVE:
-        #     print("in action----", self.action)
-        #     self.status = self.monitor_task_status(world)
-        #     self.action()
-            
+                        
 
 class PlanningHistory: #計画の履歴を作る
     def reset(self): #履歴をリセットする

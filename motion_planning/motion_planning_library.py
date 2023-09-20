@@ -72,10 +72,7 @@ class MotionPlanningLibrary:
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
-        # self.MOTION.stop_motion() #前進を終了
-        # while True:
         self.get_vision_all()
-
         if self.edge_angle != 0:
             self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
         
@@ -86,14 +83,10 @@ class MotionPlanningLibrary:
         if self.MOTION.is_button_pressed == False:
             self.MOTION.walk_forward_continue()   
                            
-            # if self.cornertype != "NONE":
-            #     self.MOTION.stop_motion()
-            #     print("Round corner")
-            #     self.round_corner()
-                
-            # if self.ball_coordinate_x != 0:
-            #     self.MOTION.stop_motion()
-            #     break
+        if self.cornertype != "NONE":
+            self.MOTION.stop_motion()
+            print("Round corner")
+            self.round_corner()
                 
     def approach_to_ball(self):
         """execute full ball approach process

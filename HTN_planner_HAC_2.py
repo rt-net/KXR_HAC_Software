@@ -78,7 +78,7 @@ walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
 walk_around.set_action(walk_in_field) #アクションの関数を指定
 
 face_ball = htn_HAC.PrimitiveTask("FaceBall") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-face_ball.set_precondition(facing_ball=False) #辞書型でpreconditionを設定
+face_ball.set_precondition(facing_ball=False, know_ball_pos=True) #辞書型でpreconditionを設定
 face_ball.set_effects(facing_ball=True) #辞書型でeffectを設定
 face_ball.set_action(turn_to_ball) #アクションの関数を指定
 
@@ -93,14 +93,14 @@ touch_ball.set_effects(touched_ball=True)
 touch_ball.set_action(extend_arm) #アクションの関数を指定
 
 turn_to_goal = htn_HAC.PrimitiveTask("TurntoGoal")
-turn_to_goal.set_precondition(facing_goal=False)
+turn_to_goal.set_precondition(facing_goal=False, touched_ball=True)
 turn_to_goal.set_effects(facing_goal=True)
-turn_to_goal.set_action(turn) #アクションの関数を指定
+turn_to_goal.set_action(extend_arm) #アクションの関数を指定
 
 walk_to_goal = htn_HAC.PrimitiveTask("WalktoGoal")
-walk_to_goal.set_precondition(facing_goal=True)
+walk_to_goal.set_precondition(facing_goal=True, touched_ball=True)
 walk_to_goal.set_effects(near_goal=True)
-walk_to_goal.set_action(walk_forward) #アクションの関数を指定
+walk_to_goal.set_action(walk_in_field) #アクションの関数を指定
 
 cross_goal = htn_HAC.PrimitiveTask("CrossGoal")
 cross_goal.set_precondition(near_goal=True)
@@ -154,7 +154,6 @@ root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethod�
 # planner.execute_plan(world)
 
 # print(world.state)
-
 
 
 # ########### HTNPlanner using Decomposed History ###########
