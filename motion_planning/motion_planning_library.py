@@ -11,13 +11,14 @@ from motion_control.motion_control_library import MotionLibrary
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import parameterfile
 
-touched_ball = False
-
 class MotionPlanningLibrary:
     def __init__(self):
         self.VISION = VisionLibrary()
         self.MOTION = MotionLibrary()
         self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
+        
+        self.in_goal = False
+        self.touched_ball = False
         
         print("[行動計画の初期化成功]")
         
@@ -175,6 +176,7 @@ class MotionPlanningLibrary:
                 self.MOTION.turn(90+self.goalline_angle)
             
             self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
+        self.in_goal = True
         
     def update_distance_to_ball(self):
             self.get_vision_all() #画像データ取得
@@ -185,7 +187,7 @@ class MotionPlanningLibrary:
     def touch_ball(self):
         self.MOTION.stop_motion() #前進を終了
         self.MOTION.touch_ball()
-        touched_ball = True
+        self.touched_ball = True
         
     def display_image(self):
         return self.result_image
@@ -215,16 +217,20 @@ class MotionPlanningLibrary:
             return False
         
     def check_touched_ball(self):
-        return touched_ball
+        return self.touched_ball
     
-    def facing_goal_update(self):
+    def check_in_goal(self):
+        return False
+    
+    def check_near_goal(self):
+        return False
+    
+    def check_facing_goal(self):
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         if self.goalline_angle != 0:
             return True
         else:
             return False
     
-    def near_goal_update(self):
-        return True
-    
     def in_goal_update(self):
-        return True
+        return self.in_goal

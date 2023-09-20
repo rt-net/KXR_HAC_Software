@@ -41,13 +41,13 @@ def check_touched_ball():
     return PLANNING.check_touched_ball()
 
 def check_facing_goal():
-    return False
+    return PLANNING.check_facing_goal()
 
 def check_near_goal():
-    return False
+    return PLANNING.check_near_goal()
 
 def check_in_goal():
-    return False
+    return PLANNING.check_in_goal()
 
 ####WorldState####
 world_state = htn_HAC.WorldState(know_ball_pos=False,
@@ -63,7 +63,7 @@ world_state.set_update_functions(know_ball_pos = check_know_ball_pose,
                                  touched_ball = check_touched_ball,
                                  facing_goal = check_facing_goal,
                                  near_goal = check_near_goal,
-                                 in_goal = check_in_goal)
+                                 in_goal = check_in_goal) #world_state更新関数のセット
 
 ####PrimitiveTasks####
 walk_around = htn_HAC.PrimitiveTask("WalkAround") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
@@ -72,17 +72,17 @@ walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
 walk_around.set_action(walk_in_field) #アクションの関数を指定
 
 face_ball = htn_HAC.PrimitiveTask("FaceBall") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-face_ball.set_precondition(facing_ball=False, in_goal=False) #辞書型でpreconditionを設定
+face_ball.set_precondition(facing_ball=False) #辞書型でpreconditionを設定
 face_ball.set_effects(facing_ball=True) #辞書型でeffectを設定
 face_ball.set_action(turn_to_ball) #アクションの関数を指定
 
 approach_ball = htn_HAC.PrimitiveTask("ApproachBall")
-approach_ball.set_precondition(facing_ball=True, in_goal=False)
+approach_ball.set_precondition(near_ball = False, facing_ball=True)
 approach_ball.set_effects(near_ball=True)
 approach_ball.set_action(walk_to_ball) #アクションの関数を指定
 
 touch_ball = htn_HAC.PrimitiveTask("TouchBall")
-touch_ball.set_precondition(near_ball=True, in_goal=False)
+touch_ball.set_precondition(near_ball=True, touched_ball=False)
 touch_ball.set_effects(touched_ball=True)
 touch_ball.set_action(extend_arm) #アクションの関数を指定
 
@@ -152,12 +152,12 @@ root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethod�
 
 
 # ########### HTNPlanner using Decomposed History ###########
-planner = htn_HAC.Planner()
-world = copy.deepcopy(world_state)
+planner = htn_HAC.Planner() #Plannerのインスタンス
+world = copy.deepcopy(world_state) #world_stateクラスのコピー
 
-while True:
+while True: #メインループ
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
     world.update_state_with_sensor_data()
-    planner.make_plan([root_task], world)
+    planner.make_plan([root_task], world) #root_taskについて、現在のworld_stateに基づいてプランを立てる
     planner.show_plan()
     planner.execute_plan(world)

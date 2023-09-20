@@ -81,10 +81,6 @@ class PrimitiveTask:
 
     def monitor_task_status(self, world):
         world.update_state_with_sensor_data()
-        
-        print(self.preconditions)
-        print(self.effects)
-        
         if set(self.preconditions.items()).issubset(world.state.items()):
             return PrimitiveTask.STATUS_ACTIVE
         elif set(self.effects.items()).issubset(world.state.items()): 
@@ -93,12 +89,16 @@ class PrimitiveTask:
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
+        print("run action")
         self.status = PrimitiveTask.STATUS_ACTIVE
+        count = 0
         while self.status == PrimitiveTask.STATUS_ACTIVE:
             print("in action----", self.action)
             self.status = self.monitor_task_status(world)
             print(self.status)
             self.action()
+            print(count)
+            count = count+1
 
 
 class PlanningHistory: #計画の履歴を作る
@@ -129,10 +129,8 @@ class FinalPlan:
         self.tasks.append(task) #tasksのリストに引数となっているタスクを付け足す
 
     def run(self, world):
-        print("running")
-        print(self.tasks)
+        #print(self.tasks)
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            print("running2")
             task.run_action(world)
             if task.status == PrimitiveTask.STATUS_FAILED:
                 print("Failed")
@@ -169,7 +167,7 @@ class Planner:
                         self.his.record(current_task, self.f_plan) #現在のタスクをプランに記録 PlanningHistoryクラスを用いる
                         tasks_to_process = list(method.subtasks) + tasks_to_process #実行するタスクにメソッドのsubtaskを追加
                     elif self.use_history: #それ以外の場合（use_historyは常にTrue）
-                        tasks_to_process = tasks_to_process + self.his.restore_task() #履歴を一段階戻す
+                        tasks_to_process = tasks_to_process + self.his.restore_task() #tasks_to_processはそのまま
             elif current_task.__class__.__name__ == 'PrimitiveTask': #もしPrimitiveTaskであれば
                 print("current primitive task name", current_task.name)
                 if self.check_task_precond(current_task): #現在のタスクのpreconditionを確認
@@ -181,7 +179,7 @@ class Planner:
                 print('WARNING: NO PLAN FOUND')
 
     def show_plan(self):
-        print(self.f_plan.tasks)
+        #print(self.f_plan.tasks)
         for task in self.f_plan.tasks:
             print(task.name)
         print("plan finish")
