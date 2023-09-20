@@ -89,17 +89,19 @@ class PrimitiveTask:
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
-        print("run action")
+        # print("\n","-"*10+"Run Action"+"-"*10)
         self.status = PrimitiveTask.STATUS_ACTIVE
-        count = 0
+        
+        #print("in action----", self.action)
         while self.status == PrimitiveTask.STATUS_ACTIVE:
-            print("in action----", self.action)
-            self.status = self.monitor_task_status(world)
-            print(self.status)
             self.action()
-            print(count)
-            count = count+1
-
+            self.status = self.monitor_task_status(world)
+        
+        # while self.status == PrimitiveTask.STATUS_ACTIVE:
+        #     print("in action----", self.action)
+        #     self.status = self.monitor_task_status(world)
+        #     self.action()
+            
 
 class PlanningHistory: #計画の履歴を作る
     def reset(self): #履歴をリセットする
@@ -131,6 +133,7 @@ class FinalPlan:
     def run(self, world):
         #print(self.tasks)
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
+            print("\n実行中のタスク: ", task.name)
             task.run_action(world)
             if task.status == PrimitiveTask.STATUS_FAILED:
                 print("Failed")
@@ -180,9 +183,10 @@ class Planner:
 
     def show_plan(self):
         #print(self.f_plan.tasks)
+        print("-"*10+"Plan Start"+"-"*10)
         for task in self.f_plan.tasks:
             print(task.name)
-        print("plan finish")
+        print("-"*10+"Plan Finish"+"-"*10)
 
     def execute_plan(self, world):
         self.f_plan.run(world)

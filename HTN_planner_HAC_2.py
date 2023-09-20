@@ -27,6 +27,12 @@ def extend_arm():
     
 def walk_into_goal():
     PLANNING.cross_goal()
+    
+def turn():
+    pass
+
+def walk_forward():
+    pass
 
 def check_know_ball_pose():
     return PLANNING.check_know_ball_pos()
@@ -89,12 +95,12 @@ touch_ball.set_action(extend_arm) #アクションの関数を指定
 turn_to_goal = htn_HAC.PrimitiveTask("TurntoGoal")
 turn_to_goal.set_precondition(facing_goal=False)
 turn_to_goal.set_effects(facing_goal=True)
-turn_to_goal.set_action(extend_arm) #アクションの関数を指定
+turn_to_goal.set_action(turn) #アクションの関数を指定
 
-walk_to_goal = htn_HAC.PrimitiveTask("CrossGoal")
+walk_to_goal = htn_HAC.PrimitiveTask("WalktoGoal")
 walk_to_goal.set_precondition(facing_goal=True)
 walk_to_goal.set_effects(near_goal=True)
-walk_to_goal.set_action(extend_arm) #アクションの関数を指定
+walk_to_goal.set_action(walk_forward) #アクションの関数を指定
 
 cross_goal = htn_HAC.PrimitiveTask("CrossGoal")
 cross_goal.set_precondition(near_goal=True)
