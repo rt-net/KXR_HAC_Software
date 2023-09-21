@@ -20,10 +20,11 @@ class MotionPlanningLibrary:
         self.in_goal = False
         self.touched_ball = False
         self.facing_goal = False
+        self.is_standing = False
         
         print("[行動計画の初期化成功]")
 
-    ########## 画像データ取得関数 ##########
+    ########## データ取得関数 ##########
  
     def get_vision_all(self):
         """collect all vision data
@@ -36,6 +37,9 @@ class MotionPlanningLibrary:
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         self.result_image = self.VISION.display_resultimg()
         
+    def get_angle_to_goal(self):
+        print(self.MOTION.get_body_angle())
+        
     ########## 各種位置関係の幾何的計算関数 ##########
      
     def update_distance_to_ball(self):
@@ -45,6 +49,7 @@ class MotionPlanningLibrary:
             self.distance_to_ball_x_pixel = self.ball_coordinate_x_wide-(parameterfile.CAMERA_FRAME_WIDTH/2) #ロボット中心からボールへのx方向距離
             self.distance_to_ball_y_pixel = parameterfile.CAMERA_FRAME_HEIGHT - self.ball_coordinate_y_wide #ロボット中心からボールへのy方向距離
             self.angle_to_ball_degrees = 0.7*(math.degrees(math.atan(self.distance_to_ball_x_pixel/self.distance_to_ball_y_pixel))) #ロボット正面からボールへの角度を計算
+            self.distance_to_ball_y_mm = 150
             print("BALL FAR")
         else:
             self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
@@ -103,7 +108,13 @@ class MotionPlanningLibrary:
             self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
         
     ########## Primitive Task ##########
-
+    
+    def stand_up(self):
+        self.MOTION.stand_up()
+        time.sleep(parameterfile.ROBOT_LONG_PAUSE)
+        self.MOTION.calibrate_IMU()
+        self.is_standing = True
+    
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
@@ -143,9 +154,11 @@ class MotionPlanningLibrary:
         self.MOTION.touch_ball() #ボールに触るモーションを再生
         self.touched_ball = True #ボールに触ったかどうかのステータスを更新
             
-    def turn_180(self):
+    def turn_to_goal(self):
         self.MOTION.stop_motion()
-        self.MOTION.turn(180)
+        yaw, pitch, roll = self.MOTION.get_body_angle()
+        print(180+yaw)
+        self.MOTION.turn(180+yaw)
         self.facing_goal=True
     
     def cross_goal(self):
@@ -177,6 +190,8 @@ class MotionPlanningLibrary:
     def check_facing_ball(self):
         self.get_vision_all() #画像データ取得
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
+            return True
+        elif self.ball_coordinate_x_wide > (parameterfile.CAMERA_FRAME_WIDTH/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.CAMERA_FRAME_WIDTH/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
         else:
             return False
@@ -214,6 +229,9 @@ class MotionPlanningLibrary:
             return True
         else:
             return False
+        
+    def check_standing(self):
+        return self.is_standing
         
     def display_image(self):
         return self.result_image

@@ -6,6 +6,9 @@ from motion_planning.motion_planning_library import MotionPlanningLibrary
 
 PLANNING = MotionPlanningLibrary()
 
+def stand_up():
+    PLANNING.stand_up()
+
 def walk_in_field():
     PLANNING.left_hand_approach()
 
@@ -21,8 +24,8 @@ def extend_arm():
 def walk_into_goal():
     PLANNING.cross_goal()
     
-def turn_180():
-    PLANNING.turn_180()
+def turn():
+    PLANNING.turn_to_goal()
 
 def walk_forward():
     pass
@@ -48,15 +51,20 @@ def check_near_goal():
 def check_in_goal():
     return PLANNING.check_in_goal()
 
+def check_standing():
+    return PLANNING.check_standing()
+
 ####WorldState####
-world_state = htn_HAC.WorldState(know_ball_pos=False,
+world_state = htn_HAC.WorldState(standing = False,
+                     know_ball_pos=False,
                      facing_ball=False,
                      near_ball=False,
                      touched_ball=False,
                      facing_goal=False,
                      near_goal=False,
                      in_goal=False) #htn_HAC.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
-world_state.set_update_functions(know_ball_pos = check_know_ball_pos,
+world_state.set_update_functions(standing = check_standing,
+                                 know_ball_pos = check_know_ball_pos,
                                  facing_ball = check_facing_ball,
                                  near_ball = check_near_ball,
                                  touched_ball = check_touched_ball,
@@ -65,6 +73,11 @@ world_state.set_update_functions(know_ball_pos = check_know_ball_pos,
                                  in_goal = check_in_goal) #world_state更新関数のセット
 
 ####PrimitiveTasks####
+init_pos = htn_HAC.PrimitiveTask("StandUp") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
+init_pos.set_precondition(standing=False, know_ball_pos=False, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
+init_pos.set_effects(standing=True) #辞書型でeffectを設定
+init_pos.set_action(stand_up) #アクションの関数を指定
+
 walk_around = htn_HAC.PrimitiveTask("WalkAround") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
 walk_around.set_precondition(know_ball_pos=False, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
 walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
@@ -88,7 +101,7 @@ touch_ball.set_action(extend_arm) #アクションの関数を指定
 turn_to_goal = htn_HAC.PrimitiveTask("TurntoGoal")
 turn_to_goal.set_precondition(facing_goal=False, touched_ball=True)
 turn_to_goal.set_effects(facing_goal=True)
-turn_to_goal.set_action(turn_180) #アクションの関数を指定
+turn_to_goal.set_action(turn) #アクションの関数を指定
 
 walk_to_goal = htn_HAC.PrimitiveTask("WalktoGoal")
 walk_to_goal.set_precondition(facing_goal=True, touched_ball=True)
@@ -103,7 +116,7 @@ cross_goal.set_action(walk_into_goal) #アクションの関数を指定
 ####Method####
 find_ball = htn_HAC.Method("FindBall") #htn_HAC.Methodクラスのインスタンス生成
 find_ball.set_precondition(know_ball_pos=False, in_goal=False) #辞書型でpreconditionを渡す
-find_ball.set_subtask(walk_around) #含まれるsubtaskをタプルで渡す
+find_ball.set_subtask(init_pos, walk_around) #含まれるsubtaskをタプルで渡す
 
 go_touch_ball = htn_HAC.Method("GoTouchBall") #htn_HAC.Methodクラスのインスタンス生成
 go_touch_ball.set_precondition(know_ball_pos=True, in_goal=False) #辞書型でpreconditionを渡す

@@ -123,6 +123,16 @@ class MotionLibrary:
                 break
             if motion_number == 0: #モーション番号が0のときは再生されていない状態
                 break
+            
+    def stand_up(self):
+        """Play stand up motion"""
+        self.rcb4.motionPlay(parameterfile.RCB4_STAND_UP) #モーション番号3(左横移動)を再生
+        while True: #モーションの再生が終わるまで繰り返し
+            motion_number = self.rcb4.getMotionPlayNum() #現在再生されているモーション番号を取得
+            if motion_number < 0: #モーション番号が0より小さい場合はエラー
+                break
+            if motion_number == 0: #モーション番号が0のときは再生されていない状態
+                break
         
     def walk_forward(self, walk_distance):
         """Play walk-forward motion according to step count
@@ -172,6 +182,7 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
+                time.sleep(parameterfile.ROBOT_REGULAR_PAUSE)
                 step_counter = step_counter+1
         else: #移動量が正の時(右へ移動の時)
             while step_counter < step_count: #定められた歩行回数まで繰り返し                
@@ -184,6 +195,7 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
+                time.sleep(parameterfile.ROBOT_REGULAR_PAUSE)
                 step_counter = step_counter+1
                 
     def turn(self, turn_angle):

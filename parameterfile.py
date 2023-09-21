@@ -22,13 +22,15 @@ FORWARD_1_SECOND_TRAVEL = 75 #1秒あたりの前進量
 #--------------------------------------------------------------
 #rcb4上でのモーション番号の設定
 RCB4_WALK_FORWARD = 1 #RCB4内のモーション番号　前進
-RCB4_WALK_LEFT = 3 #RCB4内のモーション番号　左横移動
-RCB4_WALK_RIGHT = 4 #RCB4内のモーション番号　右横移動
+RCB4_WALK_LEFT = 11 #RCB4内のモーション番号　左横移動
+RCB4_WALK_RIGHT = 12 #RCB4内のモーション番号　右横移動
 RCB4_TOUCH_BALL = 18 #RCB4内のモーション番号　ボールタッチ
 RCB4_TURN_LEFT = 13 #RCB4内のモーション番号　左旋回
 RCB4_TURN_RIGHT = 14 #RCB4内のモーション番号　右旋回
+RCB4_STAND_UP = 15 #RCB4内のモーション番号　仰向け起き上がり
 #--------------------------------------------------------------
 ROBOT_REGULAR_PAUSE = 0.5
+ROBOT_LONG_PAUSE = 2
 #--------------------------------------------------------------
 #グラフ関連のパラメータ
 GRAPH_X_AXIS_MAXIMUM = 1000
@@ -77,8 +79,8 @@ BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の
 
 #--------------------------------------------------------------
 #ボール位置の指定
-BALL_POS_TOLERANCE_MM = 100
-BALL_POS_FROM_ROBOT = 100
+BALL_POS_TOLERANCE_MM = 120
+BALL_POS_FROM_ROBOT = 80
 
 #--------------------------------------------------------------
 
