@@ -28,13 +28,13 @@ def extend_arm():
 def walk_into_goal():
     PLANNING.cross_goal()
     
-def turn():
-    pass
+def turn_180():
+    PLANNING.turn_180()
 
 def walk_forward():
     pass
 
-def check_know_ball_pose():
+def check_know_ball_pos():
     return PLANNING.check_know_ball_pos()
 
 def check_facing_ball():
@@ -63,7 +63,7 @@ world_state = htn_HAC.WorldState(know_ball_pos=False,
                      facing_goal=False,
                      near_goal=False,
                      in_goal=False) #htn_HAC.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
-world_state.set_update_functions(know_ball_pos = check_know_ball_pose,
+world_state.set_update_functions(know_ball_pos = check_know_ball_pos,
                                  facing_ball = check_facing_ball,
                                  near_ball = check_near_ball,
                                  touched_ball = check_touched_ball,
@@ -73,12 +73,12 @@ world_state.set_update_functions(know_ball_pos = check_know_ball_pose,
 
 ####PrimitiveTasks####
 walk_around = htn_HAC.PrimitiveTask("WalkAround") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-walk_around.set_precondition(know_ball_pos=False) #辞書型でpreconditionを設定
+walk_around.set_precondition(know_ball_pos=False, in_goal=False) #辞書型でpreconditionを設定
 walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
 walk_around.set_action(walk_in_field) #アクションの関数を指定
 
 face_ball = htn_HAC.PrimitiveTask("FaceBall") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-face_ball.set_precondition(facing_ball=False, know_ball_pos=True) #辞書型でpreconditionを設定
+face_ball.set_precondition(facing_ball=False, know_ball_pos=True, in_goal=False) #辞書型でpreconditionを設定
 face_ball.set_effects(facing_ball=True) #辞書型でeffectを設定
 face_ball.set_action(turn_to_ball) #アクションの関数を指定
 
@@ -95,7 +95,7 @@ touch_ball.set_action(extend_arm) #アクションの関数を指定
 turn_to_goal = htn_HAC.PrimitiveTask("TurntoGoal")
 turn_to_goal.set_precondition(facing_goal=False, touched_ball=True)
 turn_to_goal.set_effects(facing_goal=True)
-turn_to_goal.set_action(extend_arm) #アクションの関数を指定
+turn_to_goal.set_action(turn_180) #アクションの関数を指定
 
 walk_to_goal = htn_HAC.PrimitiveTask("WalktoGoal")
 walk_to_goal.set_precondition(facing_goal=True, touched_ball=True)

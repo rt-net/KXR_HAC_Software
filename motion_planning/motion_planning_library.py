@@ -19,6 +19,7 @@ class MotionPlanningLibrary:
         
         self.in_goal = False
         self.touched_ball = False
+        self.facing_goal = False
         
         print("[行動計画の初期化成功]")
         
@@ -158,6 +159,7 @@ class MotionPlanningLibrary:
             
     def cross_goal(self):
         self.get_vision_all()
+        self.MOTION.stop_motion()
         if self.goalline_angle != 0:
             self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
             print("angle", self.goalline_angle)
@@ -168,7 +170,8 @@ class MotionPlanningLibrary:
             else:
                 self.MOTION.turn(90+self.goalline_angle)
             
-            self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
+        self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
+        print("GOAL")
         self.in_goal = True
         
     def update_distance_to_ball(self):
@@ -187,7 +190,7 @@ class MotionPlanningLibrary:
 
     def check_know_ball_pos(self):
         #print("check know ball pos")
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball_wide()
         if self.ball_coordinate_x != 0:
             return True
         else:
@@ -213,17 +216,26 @@ class MotionPlanningLibrary:
         return self.touched_ball
     
     def check_in_goal(self):
-        return False
+        return self.in_goal
     
     def check_near_goal(self):
-        return False
-    
-    def check_facing_goal(self):
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
-        if self.goalline_angle != 0:
+        self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
+        
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM:
             return True
         else:
             return False
     
-    def in_goal_update(self):
-        return self.in_goal
+    def check_facing_goal(self):
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
+        
+        if self.goalline_angle != 0 or self.facing_goal == True:
+            return True
+        else:
+            return False
+    
+    def turn_180(self):
+        self.MOTION.stop_motion()
+        self.MOTION.turn(180)
+        self.facing_goal=True

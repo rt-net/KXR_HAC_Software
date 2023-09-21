@@ -81,8 +81,10 @@ class VisionLibrary:
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
-
+        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        frame_mask = frame_mask_high | frame_mask_low
+        
         blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
 
@@ -156,7 +158,7 @@ class VisionLibrary:
     def detect_ball(self): #ボール検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_LOWER, parameterfile.BALL_COLOR_UPPER) #ボール色をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
         ball_pixel_area = cv2.countNonZero(frame_mask) #ボールのマスクの画素数を取得
         ball_center_of_gravity = cv2.moments(frame_mask, False) #ボールの重心座標を取得
         
@@ -173,11 +175,33 @@ class VisionLibrary:
             self.is_found_ball = True
         
         return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y
+    
+    def detect_ball_wide(self):
+        ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
+        ball_pixel_area = cv2.countNonZero(frame_mask) #ボールのマスクの画素数を取得
+        ball_center_of_gravity = cv2.moments(frame_mask, False) #ボールの重心座標を取得
+        
+        if ball_pixel_area > parameterfile.BALL_PIXEL_AREA_THRESHOLD_WIDE:
+            self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]) , int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
+        else:
+            self.ball_pixel_coordinate_x = 0
+            self.ball_pixel_coordinate_y = 0
+        
+        if self.ball_pixel_coordinate_x == 0 and self.ball_pixel_coordinate_y == 0:
+            self.is_found_ball = False
+        else:
+            self.is_found_ball = True
+        
+        return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y
 
     def detect_corner(self): #コーナー検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        frame_mask = frame_mask_high | frame_mask_low
         
         # 処理対象画像の各画素に対して、テンプレート画像との類似度を算出する
         match_left = cv2.matchTemplate(frame_mask, parameterfile.LEFT_CORNER_TEMPLATE, cv2.TM_CCOEFF_NORMED)
@@ -205,6 +229,10 @@ class VisionLibrary:
         
     def display_resultimg(self):#結果画像の表示用関数
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
+        hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        frame_mask = frame_mask_high | frame_mask_low
         
         if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
             #見えている線の合成の描画
@@ -267,13 +295,15 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
                 
-        return result
+        return frame_mask#result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, parameterfile.FIELD_COLOR_LOWER, parameterfile.FIELD_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        frame_mask = frame_mask_high | frame_mask_low
 
         blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
@@ -353,7 +383,7 @@ class VisionLibrary:
         # frame[:,:,(2)] = frame[:,:,(2)]*v  # 明度の計算
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_LOWER, parameterfile.GOAL_COLOR_UPPER)   #エッジ赤線をマスク
+        frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_MIN, parameterfile.GOAL_COLOR_MAX)   #エッジ赤線をマスク
 
         blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE_GOAL) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る

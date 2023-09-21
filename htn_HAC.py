@@ -81,16 +81,19 @@ class PrimitiveTask:
 
     def monitor_task_status(self, world):
         world.update_state_with_sensor_data()
-        if set(self.preconditions.items()).issubset(world.state.items()):
-            return PrimitiveTask.STATUS_ACTIVE
-        elif set(self.effects.items()).issubset(world.state.items()): 
+        if set(self.effects.items()).issubset(world.state.items()): 
+            print("COMPLETE")
             return PrimitiveTask.STATUS_COMPLETE
+        elif set(self.preconditions.items()).issubset(world.state.items()):
+            print("ACTIVE")
+            return PrimitiveTask.STATUS_ACTIVE
         else:
+            print("FAILED")
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
         self.status = PrimitiveTask.STATUS_ACTIVE
-        #print("in action----", self.action)
+        print("in action----", self.action)
         while self.status == PrimitiveTask.STATUS_ACTIVE:
             self.action()
             self.status = self.monitor_task_status(world)
@@ -129,7 +132,6 @@ class FinalPlan:
             print("\n実行中のタスク: ", task.name)
             task.run_action(world)
             if task.status == PrimitiveTask.STATUS_FAILED:
-                print("Failed")
                 break
 
 class Planner:

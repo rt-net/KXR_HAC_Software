@@ -56,8 +56,11 @@ BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形高さ
 #--------------------------------------------------------------
 
 #フィールドの色範囲指定(HSV)
-FIELD_COLOR_LOWER = np.array([165,50,50]) #エッジ色の下閾値
-FIELD_COLOR_UPPER = np.array([180,255,255]) #エッジ色の上閾値
+FIELD_COLOR_MIN_LOW = np.array([0,50,50]) #エッジ色の下閾値
+FIELD_COLOR_MAX_LOW = np.array([15,255,255]) #エッジ色の上閾値
+
+FIELD_COLOR_MIN_HIGH = np.array([165,50,50]) #エッジ色の下閾値
+FIELD_COLOR_MAX_HIGH = np.array([180,255,255]) #エッジ色の上閾値
 
 EDGE_PIXEL_AREA_THRESHOLD = 2000 #エッジの存在判定用エッジ色の画素数閾値
 
@@ -66,10 +69,11 @@ BLUR_FILTER_SIZE = 3 #ぼかしフィルターサイズ
 #--------------------------------------------------------------
 
 #ボールの色範囲指定(HSV)
-BALL_COLOR_LOWER = np.array([5,200,180]) #ボール色の下閾値
-BALL_COLOR_UPPER = np.array([25,255,255]) #ボール色の上閾値
+BALL_COLOR_MIN = np.array([5,200,180]) #ボール色の下閾値
+BALL_COLOR_MAX = np.array([25,255,255]) #ボール色の上閾値
 
 BALL_PIXEL_AREA_THRESHOLD = 2000 #ボールの存在判定用ボール色の画素数閾値
+BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の画素数閾値
 
 #--------------------------------------------------------------
 #ボール位置の指定
@@ -79,8 +83,8 @@ BALL_POS_FROM_ROBOT = 100
 #--------------------------------------------------------------
 
 #ゴールラインの色範囲指定(HSV)
-GOAL_COLOR_LOWER = np.array([0, 0, 254]) #ゴールライン色の下閾値
-GOAL_COLOR_UPPER = np.array([1, 1, 255]) #ゴールライン色の上閾値
+GOAL_COLOR_MIN = np.array([0, 0, 254]) #ゴールライン色の下閾値
+GOAL_COLOR_MAX = np.array([1, 1, 255]) #ゴールライン色の上閾値
 
 BLUR_FILTER_SIZE_GOAL = 9
 
