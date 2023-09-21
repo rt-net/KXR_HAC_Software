@@ -2,25 +2,18 @@ import sys
 import htn_HAC
 import copy
 
-# from vision.vision_library import VisionLibrary
-# from motion_control.motion_control_library import MotionLibrary
 from motion_planning.motion_planning_library import MotionPlanningLibrary
 
-# VISION = VisionLibrary()
-# MOTION = MotionLibrary()
 PLANNING = MotionPlanningLibrary()
 
 def walk_in_field():
-    #print("walk in field")
     PLANNING.left_hand_approach()
 
 def turn_to_ball():
-    #print("turn to ball")
-    PLANNING.turn_to_ball_2()
+    PLANNING.turn_to_ball()
     
 def walk_to_ball():
-    #print("walk to ball")
-    PLANNING.walk_to_ball_2()
+    PLANNING.walk_to_ball()
 
 def extend_arm():
     PLANNING.touch_ball()
@@ -73,17 +66,17 @@ world_state.set_update_functions(know_ball_pos = check_know_ball_pos,
 
 ####PrimitiveTasks####
 walk_around = htn_HAC.PrimitiveTask("WalkAround") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-walk_around.set_precondition(know_ball_pos=False, in_goal=False) #辞書型でpreconditionを設定
+walk_around.set_precondition(know_ball_pos=False, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
 walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
 walk_around.set_action(walk_in_field) #アクションの関数を指定
 
 face_ball = htn_HAC.PrimitiveTask("FaceBall") #htn_HAC.PrimitiveTaskクラスのインスタンス生成
-face_ball.set_precondition(facing_ball=False, know_ball_pos=True, in_goal=False) #辞書型でpreconditionを設定
+face_ball.set_precondition(facing_ball=False, know_ball_pos=True, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
 face_ball.set_effects(facing_ball=True) #辞書型でeffectを設定
 face_ball.set_action(turn_to_ball) #アクションの関数を指定
 
 approach_ball = htn_HAC.PrimitiveTask("ApproachBall")
-approach_ball.set_precondition(near_ball = False, facing_ball=True)
+approach_ball.set_precondition(near_ball = False, facing_ball=True, touched_ball=False)
 approach_ball.set_effects(near_ball=True)
 approach_ball.set_action(walk_to_ball) #アクションの関数を指定
 
@@ -124,6 +117,16 @@ go_to_goal.set_subtask(turn_to_goal, walk_to_goal, cross_goal) #含まれるsubt
 root_task = htn_HAC.CompoundTask("HACStrategy") #htn_HAC.CompoundTaskクラスのインスタンス生成
 root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethodをタプルで渡す　CompoundTaskにはpreconditionは無い？
 
+# ########### HTNPlanner using Decomposed History ###########
+planner = htn_HAC.Planner() #Plannerのインスタンス
+world = copy.deepcopy(world_state) #world_stateクラスのコピー
+
+while True: #メインループ
+    print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
+    world.update_state_with_sensor_data()
+    planner.make_plan([root_task], world) #root_taskについて、現在のworld_stateに基づいてプランを立てる
+    planner.show_plan()
+    planner.execute_plan(world)
 
 
 ########### HTNPlanner without using Decomposed History ###########
@@ -154,15 +157,3 @@ root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethod�
 # planner.execute_plan(world)
 
 # print(world.state)
-
-
-# ########### HTNPlanner using Decomposed History ###########
-planner = htn_HAC.Planner() #Plannerのインスタンス
-world = copy.deepcopy(world_state) #world_stateクラスのコピー
-
-while True: #メインループ
-    print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
-    world.update_state_with_sensor_data()
-    planner.make_plan([root_task], world) #root_taskについて、現在のworld_stateに基づいてプランを立てる
-    planner.show_plan()
-    planner.execute_plan(world)

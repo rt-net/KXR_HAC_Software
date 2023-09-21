@@ -22,7 +22,35 @@ class MotionPlanningLibrary:
         self.facing_goal = False
         
         print("[行動計画の初期化成功]")
+
+    ########## 画像データ取得関数 ##########
+ 
+    def get_vision_all(self):
+        """collect all vision data
+        """
+        self.VISION.calibrate_img()
+        self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
+        self.ball_coordinate_x_wide, self.ball_coordinate_y_wide = self.VISION.detect_ball_wide()
+        self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
+        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
+        self.result_image = self.VISION.display_resultimg()
         
+    ########## 各種位置関係の幾何的計算関数 ##########
+     
+    def update_distance_to_ball(self):
+        self.get_vision_all() #画像データ取得
+        if self.ball_coordinate_x == 0 and self.ball_coordinate_y == 0: #鳥瞰図の中にボールが無いとき
+            print(self.ball_coordinate_x_wide, self.ball_coordinate_y_wide)
+            self.distance_to_ball_x_pixel = self.ball_coordinate_x_wide-(parameterfile.CAMERA_FRAME_WIDTH/2) #ロボット中心からボールへのx方向距離
+            self.distance_to_ball_y_pixel = parameterfile.CAMERA_FRAME_HEIGHT - self.ball_coordinate_y_wide #ロボット中心からボールへのy方向距離
+            self.angle_to_ball_degrees = 0.7*(math.degrees(math.atan(self.distance_to_ball_x_pixel/self.distance_to_ball_y_pixel))) #ロボット正面からボールへの角度を計算
+            print("BALL FAR")
+        else:
+            self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
+            self.distance_to_ball_y_mm = parameterfile.BEV_FRAME_HEIGHT_MM - self.ball_coordinate_y #ロボット中心からボールへのy方向距離
+            self.angle_to_ball_degrees = math.degrees(math.atan(self.distance_to_ball_x_mm/self.distance_to_ball_y_mm)) #ロボット正面からボールへの角度を計算
+
     def calculate_distance_from_the_edge_mm(self, slope, intercept):
         """calculate current distance from robot-cog to edge
         """
@@ -43,18 +71,10 @@ class MotionPlanningLibrary:
             self.distance_from_the_edge_mm = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
         except:
             self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM
-        
-    def get_vision_all(self):
-        """collect all vision data
-        """
-        self.VISION.calibrate_img()
-        self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
-        self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
-        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
-        self.result_image = self.VISION.display_resultimg()
-        
-    def align_with_field_edge(self):
+
+    ########## Primitive Task内でロボットを動かすための関数 ##########
+    
+    def align_with_field_edge(self): #エッジとの位置関係を正す
         """align robot with field edge
         """
         self.get_vision_all() #画像情報取得
@@ -69,7 +89,21 @@ class MotionPlanningLibrary:
                 self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
             else:
                 self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM))
+                
+    def round_corner(self): #コーナーを曲がる（テスト中）
+        self.get_vision_all()
+        if self.cornertype == "NONE":
+            print("None")
+        elif self.cornertype == "RIGHT":
+            self.MOTION.turn(90)
+            print(-(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate))
+            self.MOTION.walk_sideway(-self.corner_y_coordinate)
+        elif self.cornertype == "LEFT":
+            self.MOTION.turn(-90)
+            self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
         
+    ########## Primitive Task ##########
+
     def left_hand_approach(self):
         """execute a loop of left hand approach
         """
@@ -88,75 +122,32 @@ class MotionPlanningLibrary:
             self.MOTION.stop_motion()
             print("Round corner")
             self.round_corner()
-                
-    def approach_to_ball(self):
-        """execute full ball approach process
-        """
-        self.update_distance_to_ball()        
-        print("X", self.distance_to_ball_x_mm, "Y", self.distance_to_ball_y_mm)
-        
-        self.MOTION.turn(self.angle_to_ball_degrees) #ボールに正対するように旋回
-        
-        while True:
-            if self.MOTION.is_button_pressed == False:
-                self.MOTION.walk_forward_continue() #ボールに向けて前進開始
-            
-            self.update_distance_to_ball() #ボールとの位置関係をアップデート
-            
-            if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
-                self.MOTION.stop_motion() #前進を終了
-                self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
-                
-                self.update_distance_to_ball() #ボールとの距離をもう一度アップデート
-                
-                print(self.distance_to_ball_y_mm)
-                self.MOTION.walk_forward(self.distance_to_ball_y_mm) #ボールまでの残り距離を前進                    
-                self.MOTION.touch_ball() #ボールに触れる
-                
-                if self.is_ball_touched() == True:
-                    print("Touched Ball")
-                    break
-            elif self.ball_coordinate_x == 0 and self.ball_coordinate_y == 0: #ボールを見失ったとき
-                self.MOTION.stop_motion() #前進を終了
-                print("Ball Lost")
-                break          
-            
-    def turn_to_ball_2(self):
+
+    def turn_to_ball(self):
         self.MOTION.stop_motion() #前進を終了
-        self.update_distance_to_ball()
+        self.update_distance_to_ball() #ボールとの位置関係をアップデート
         self.MOTION.turn(self.angle_to_ball_degrees) #ボールに正対するように旋回
         
-    def walk_to_ball_2(self):
-        while True:
-            if self.MOTION.is_button_pressed == False:
-                self.MOTION.walk_forward_continue() #ボールに向けて前進開始
-            
-            self.update_distance_to_ball() #ボールとの位置関係をアップデート
-            
-            if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
-                self.MOTION.stop_motion() #前進を終了
-                self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
-                break
-        
-    def is_ball_touched(self):
-        distance_to_ball_x_mm_old = self.distance_to_ball_x_mm
-        distance_to_ball_y_mm_old = self.distance_to_ball_y_mm
-        
+    def walk_to_ball(self): #ボールにアプローチする
         self.update_distance_to_ball() #ボールとの位置関係をアップデート
         
-    def round_corner(self):
-        self.get_vision_all()
-        if self.cornertype == "NONE":
-            print("None")
-        elif self.cornertype == "RIGHT":
-            self.MOTION.turn(90)
-            print(-(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate))
-            self.MOTION.walk_sideway(-self.corner_y_coordinate)
-        elif self.cornertype == "LEFT":
-            self.MOTION.turn(-90)
-            self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
-
+        if self.MOTION.is_button_pressed == False: #前進中でない場合
+            self.MOTION.walk_forward_continue() #ボールに向けて前進開始 
+               
+        if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
+            self.MOTION.stop_motion() #前進を終了
+            self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
+                 
+    def touch_ball(self):
+        self.MOTION.stop_motion() #前進を終了
+        self.MOTION.touch_ball() #ボールに触るモーションを再生
+        self.touched_ball = True #ボールに触ったかどうかのステータスを更新
             
+    def turn_180(self):
+        self.MOTION.stop_motion()
+        self.MOTION.turn(180)
+        self.facing_goal=True
+    
     def cross_goal(self):
         self.get_vision_all()
         self.MOTION.stop_motion()
@@ -174,31 +165,17 @@ class MotionPlanningLibrary:
         print("GOAL")
         self.in_goal = True
         
-    def update_distance_to_ball(self):
-            self.get_vision_all() #画像データ取得
-            self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
-            self.distance_to_ball_y_mm = parameterfile.BEV_FRAME_HEIGHT_MM - self.ball_coordinate_y #ロボット中心からボールへのy方向距離
-            self.angle_to_ball_degrees = math.degrees(math.tan(self.distance_to_ball_x_mm/self.distance_to_ball_y_mm)) #ロボット正面からボールへの角度を計算
-            
-    def touch_ball(self):
-        self.MOTION.stop_motion() #前進を終了
-        self.MOTION.touch_ball()
-        self.touched_ball = True
-        
-    def display_image(self):
-        return self.result_image
-
+    ########## World State更新関連の関数 ##########
+    
     def check_know_ball_pos(self):
-        #print("check know ball pos")
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball_wide()
-        if self.ball_coordinate_x != 0:
+        self.get_vision_all() #画像データ取得
+        if self.ball_coordinate_x_wide != 0:
             return True
         else:
             return False
     
     def check_facing_ball(self):
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
-        #print("check facing ball")
+        self.get_vision_all() #画像データ取得
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
         else:
@@ -206,6 +183,7 @@ class MotionPlanningLibrary:
     
     def check_near_ball(self):
         #print("check near ball")
+        self.VISION.calibrate_img()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         if self.ball_coordinate_y > parameterfile.BEV_FRAME_HEIGHT_MM-parameterfile.BALL_POS_FROM_ROBOT:
             return True
@@ -219,6 +197,7 @@ class MotionPlanningLibrary:
         return self.in_goal
     
     def check_near_goal(self):
+        self.VISION.calibrate_img()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
         
@@ -228,14 +207,53 @@ class MotionPlanningLibrary:
             return False
     
     def check_facing_goal(self):
+        self.VISION.calibrate_img()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         
         if self.goalline_angle != 0 or self.facing_goal == True:
             return True
         else:
             return False
+        
+    def display_image(self):
+        return self.result_image
     
-    def turn_180(self):
-        self.MOTION.stop_motion()
-        self.MOTION.turn(180)
-        self.facing_goal=True
+    
+    # def approach_to_ball(self):
+    #     """execute full ball approach process
+    #     """
+    #     self.update_distance_to_ball()        
+    #     print("X", self.distance_to_ball_x_mm, "Y", self.distance_to_ball_y_mm)
+        
+    #     self.MOTION.turn(self.angle_to_ball_degrees) #ボールに正対するように旋回
+        
+    #     while True:
+    #         if self.MOTION.is_button_pressed == False:
+    #             self.MOTION.walk_forward_continue() #ボールに向けて前進開始
+            
+    #         self.update_distance_to_ball() #ボールとの位置関係をアップデート
+            
+    #         if self.distance_to_ball_y_mm < parameterfile.BALL_APPROACH_THRESHOLD: #ボールとの距離が閾値以下の時
+    #             self.MOTION.stop_motion() #前進を終了
+    #             self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールを目の前に置くまで横に歩行
+                
+    #             self.update_distance_to_ball() #ボールとの距離をもう一度アップデート
+                
+    #             print(self.distance_to_ball_y_mm)
+    #             self.MOTION.walk_forward(self.distance_to_ball_y_mm) #ボールまでの残り距離を前進                    
+    #             self.MOTION.touch_ball() #ボールに触れる
+                
+    #             if self.is_ball_touched() == True:
+    #                 print("Touched Ball")
+    #                 break
+    #         elif self.ball_coordinate_x == 0 and self.ball_coordinate_y == 0: #ボールを見失ったとき
+    #             self.MOTION.stop_motion() #前進を終了
+    #             print("Ball Lost")
+    #             break          
+    
+            
+    # def is_ball_touched(self):
+    #     distance_to_ball_x_mm_old = self.distance_to_ball_x_mm
+    #     distance_to_ball_y_mm_old = self.distance_to_ball_y_mm
+    
+    #     self.update_distance_to_ball() #ボールとの位置関係をアップデート

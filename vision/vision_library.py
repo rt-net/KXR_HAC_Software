@@ -75,6 +75,10 @@ class VisionLibrary:
                                        BEV_transform_parameter, 
                                        (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
         
+        # self.BEV = cv2.warpPerspective(frame, 
+        #                                BEV_transform_parameter, 
+        #                                (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
+        
         return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
         
     def detect_edge(self): #エッジ検出の関数
@@ -184,17 +188,17 @@ class VisionLibrary:
         ball_center_of_gravity = cv2.moments(frame_mask, False) #ボールの重心座標を取得
         
         if ball_pixel_area > parameterfile.BALL_PIXEL_AREA_THRESHOLD_WIDE:
-            self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]) , int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
+            self.ball_pixel_coordinate_x_wide,self.ball_pixel_coordinate_y_wide = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]) , int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
         else:
-            self.ball_pixel_coordinate_x = 0
-            self.ball_pixel_coordinate_y = 0
+            self.ball_pixel_coordinate_x_wide = 0
+            self.ball_pixel_coordinate_y_wide = 0
         
-        if self.ball_pixel_coordinate_x == 0 and self.ball_pixel_coordinate_y == 0:
+        if self.ball_pixel_coordinate_x_wide == 0 and self.ball_pixel_coordinate_y_wide == 0:
             self.is_found_ball = False
         else:
             self.is_found_ball = True
         
-        return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y
+        return self.ball_pixel_coordinate_x_wide, self.ball_pixel_coordinate_y_wide
 
     def detect_corner(self): #コーナー検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
@@ -229,10 +233,10 @@ class VisionLibrary:
         
     def display_resultimg(self):#結果画像の表示用関数
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
-        hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
-        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
-        frame_mask = frame_mask_high | frame_mask_low
+        # hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        # frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        # frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        # frame_mask = frame_mask_high | frame_mask_low
         
         if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
             #見えている線の合成の描画
@@ -295,7 +299,7 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
                 
-        return frame_mask#result
+        return result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
