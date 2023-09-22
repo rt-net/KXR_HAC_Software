@@ -98,24 +98,25 @@ class MotionPlanningLibrary:
                 
     def round_corner(self): #コーナーを曲がる（テスト中）
         self.get_vision_all()
+        self.MOTION.turn(round(self.edge_angle))
         if self.cornertype == "NONE":
             print("NONE")
         elif self.cornertype == "RIGHT":
             print("RIGHT")
-            self.MOTION.turn(75)
+            self.MOTION.turn(80)
             self.MOTION.walk_sideway(-(self.corner_y_coordinate+parameterfile.AVOID_CORNER_MM))
         elif self.cornertype == "LEFT":
             print("LEFT")
-            self.MOTION.turn(-75)
+            self.MOTION.turn(-80)
             #print(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
             #self.MOTION.walk_sideway(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
         elif self.cornertype == "RIGHT_WIDE":
             print("RIGHT_WIDE")
-            self.MOTION.turn(75)
-            self.MOTION.walk_sideway(-200)
+            self.MOTION.turn(80)
+            self.MOTION.walk_sideway(-250)
         elif self.cornertype == "LEFT_WIDE":
             print("LEFT_WIDE")
-            self.MOTION.turn(-75)
+            self.MOTION.turn(-80)
                     
     ########## Primitive Task ##########
     

@@ -4,9 +4,9 @@ import cv2
 #Motion Planning Parameters###################################
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
 
-WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 230
-WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 200
-WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 260
+WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 150
+WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 120
+WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 150
 
 BALL_APPROACH_THRESHOLD = 100
 
@@ -64,7 +64,7 @@ FIELD_COLOR_MAX_LOW = np.array([20,255,255]) #エッジ色の上閾値
 FIELD_COLOR_MIN_HIGH = np.array([160,40,40]) #エッジ色の下閾値
 FIELD_COLOR_MAX_HIGH = np.array([180,255,255]) #エッジ色の上閾値
 
-EDGE_PIXEL_AREA_THRESHOLD = 2000 #エッジの存在判定用エッジ色の画素数閾値
+EDGE_PIXEL_AREA_THRESHOLD = 2300 #エッジの存在判定用エッジ色の画素数閾値
 
 BLUR_FILTER_SIZE = 3 #ぼかしフィルターサイズ
 
@@ -74,7 +74,7 @@ BLUR_FILTER_SIZE = 3 #ぼかしフィルターサイズ
 BALL_COLOR_MIN = np.array([5,200,180]) #ボール色の下閾値
 BALL_COLOR_MAX = np.array([25,255,255]) #ボール色の上閾値
 
-BALL_PIXEL_AREA_THRESHOLD = 2300 #ボールの存在判定用ボール色の画素数閾値
+BALL_PIXEL_AREA_THRESHOLD = 1500 #ボールの存在判定用ボール色の画素数閾値
 BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の画素数閾値
 
 #--------------------------------------------------------------
@@ -116,6 +116,6 @@ right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 TEMPLATE_MATCH_THRESHOLD = 0.65#0.85 #パターンマッチの閾値
-TEMPLATE_MATCH_THRESHOLD_WIDE = 0.65#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD_WIDE = 0.7#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------
