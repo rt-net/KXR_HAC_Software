@@ -230,8 +230,63 @@ class VisionLibrary:
             self.corner_type = "NONE"
             
         return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
+    
+    def detect_corner_wide(self): #コーナー検出の関数
+        ret, frame = self.cap.read()     
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
+        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
+        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
+        frame_mask = frame_mask_high | frame_mask_low
+        
+        # 処理対象画像の各画素に対して、テンプレート画像との類似度を算出する
+        match_left = cv2.matchTemplate(frame_mask, parameterfile.LEFT_CORNER_TEMPLATE_WIDE, cv2.TM_CCOEFF_NORMED)
+        match_right = cv2.matchTemplate(frame_mask, parameterfile.RIGHT_CORNER_TEMPLATE_WIDE, cv2.TM_CCOEFF_NORMED)
+       
+        # 閾値に基づき類似度の高い画素を得る　値はlist
+        left_corner_pixel_coordinate = np.where(match_left >= parameterfile.TEMPLATE_MATCH_THRESHOLD_WIDE)
+        right_corner_pixel_coordinate = np.where(match_right >= parameterfile.TEMPLATE_MATCH_THRESHOLD_WIDE)
+        
+        if left_corner_pixel_coordinate[0].any(): #左コーナーが検出されているとき
+            self.corner_pixel_coordinate_y = sum(left_corner_pixel_coordinate[0])/len(left_corner_pixel_coordinate[0]) #左コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_pixel_coordinate_x = sum(left_corner_pixel_coordinate[1])/len(left_corner_pixel_coordinate[1]) #左コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_type = "RIGHT_WIDE" #コーナー種別を1に設定
+        elif right_corner_pixel_coordinate[0].any(): #右コーナーが検出されているとき
+            self.corner_pixel_coordinate_y = sum(right_corner_pixel_coordinate[0])/len(right_corner_pixel_coordinate[0]) #右コーナーのy座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_pixel_coordinate_x = sum(right_corner_pixel_coordinate[1])/len(right_corner_pixel_coordinate[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
+            self.corner_type = "LEFT_WIDE" #コーナー種別を2に設定
+        else:
+            self.corner_type = "NONE"
+            
+        return self.corner_type #コーナー座標、種別を返す
+        
         
     def display_resultimg(self):#結果画像の表示用関数
+        ret, result = self.cap.read()   
+        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
+            cv2.rectangle(result, 
+                          (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
+                          (int(self.corner_pixel_coordinate_x)+30, int(self.corner_pixel_coordinate_y)+30), 
+                          (255, 255, 0), 2) 
+            if self.corner_type == "LEFT_WIDE":
+                cv2.putText(result,
+                            text="Left",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+            elif self.corner_type == "RIGHT_WIDE":
+                cv2.putText(result,
+                            text="Right",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+        return result
+    
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         # hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         # frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
@@ -299,7 +354,7 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
                 
-        return result
+        #return result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
@@ -424,7 +479,7 @@ class VisionLibrary:
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_list = theta
                     rho_list = rho
-                else: #θの標準偏差が1以上の時                 
+                elif theta_std_dev >= 1: #θの標準偏差が1以上の時                 
                     theta_list = np.where(theta>math.pi/2, theta-math.pi, theta)
                     rho_list = np.where(theta>math.pi/2, -rho, rho)
                 
@@ -451,23 +506,7 @@ class VisionLibrary:
                     self.goalline_angle = -(self.goalline_angle + 90) 
                 else:
                     self.goalline_angle = -(self.goalline_angle - 90)
-                    
-                # #見えている線の合成の描画
-                # cv2.line(frame_mask, 
-                #         (int(self.goalline_x1_average), int(self.goalline_y1_average)), 
-                #         (int(self.goalline_x2_average), int(self.goalline_y2_average)), 
-                #         (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
-                
-                # #線の角度(度)の画像への書き込み
-                # cv2.putText(frame_mask,
-                #             text=str(self.goalline_angle),
-                #             org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
-                #             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                #             fontScale=0.6,
-                #             color=(0, 255, 0),
-                #             thickness=2,
-                #             lineType=cv2.LINE_4)
-                
+        
         if self.goalline_slope == 0 and self.goalline_intercept == 0:
             self.is_found_goal = False
         else:

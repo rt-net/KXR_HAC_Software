@@ -17,7 +17,11 @@ i = 0
 start = time.time()
 
 while True:
-    MOTION.stand_up()
+    MOTION.walk_forward_continue()
+    i = i+1
+    print(i)
+    if i>500:
+        break
     # VISION.calibrate_img()
     # angle, slope, intercept = VISION.detect_edge_using_numpy_calc()
     # ballx, bally = VISION.detect_ball()
@@ -54,7 +58,4 @@ while True:
     # start = time.time()
         
     # print(MOTION.field_absolute_cordinate())
-        
-        
-        
-        
+MOTION.stop_motion()

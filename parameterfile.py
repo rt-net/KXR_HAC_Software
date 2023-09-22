@@ -4,9 +4,9 @@ import cv2
 #Motion Planning Parameters###################################
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
 
-WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 250
+WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 230
 WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 200
-WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 300
+WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 260
 
 BALL_APPROACH_THRESHOLD = 100
 
@@ -15,13 +15,13 @@ AVOID_CORNER_MM = 200
 #Motion Control Parameters#####################################
 #一歩当たりの移動量の設定
 FORWARD_SINGLE_STEP_TRAVEL = 38 #前進1歩あたりの移動量(mm)
-SIDE_SINGLE_STEP_TRAVEL = 16 #横歩行あたりの移動量(mm)
+SIDE_SINGLE_STEP_TRAVEL = 50 #横歩行あたりの移動量(mm)
 TURN_SINGLE_STEP_ANGLE = 25 #旋回一回あたりの回転角度(度)
 
 FORWARD_1_SECOND_TRAVEL = 75 #1秒あたりの前進量
 #--------------------------------------------------------------
 #rcb4上でのモーション番号の設定
-RCB4_WALK_FORWARD = 1 #RCB4内のモーション番号　前進
+RCB4_WALK_FORWARD = 9 #RCB4内のモーション番号　前進
 RCB4_WALK_LEFT = 11 #RCB4内のモーション番号　左横移動
 RCB4_WALK_RIGHT = 12 #RCB4内のモーション番号　右横移動
 RCB4_TOUCH_BALL = 18 #RCB4内のモーション番号　ボールタッチ
@@ -58,10 +58,10 @@ BEV_FRAME_HEIGHT_MM = 395 #画角内に配置できる最大の長方形高さ
 #--------------------------------------------------------------
 
 #フィールドの色範囲指定(HSV)
-FIELD_COLOR_MIN_LOW = np.array([0,50,50]) #エッジ色の下閾値
-FIELD_COLOR_MAX_LOW = np.array([15,255,255]) #エッジ色の上閾値
+FIELD_COLOR_MIN_LOW = np.array([0,40,40]) #エッジ色の下閾値
+FIELD_COLOR_MAX_LOW = np.array([20,255,255]) #エッジ色の上閾値
 
-FIELD_COLOR_MIN_HIGH = np.array([165,50,50]) #エッジ色の下閾値
+FIELD_COLOR_MIN_HIGH = np.array([160,40,40]) #エッジ色の下閾値
 FIELD_COLOR_MAX_HIGH = np.array([180,255,255]) #エッジ色の上閾値
 
 EDGE_PIXEL_AREA_THRESHOLD = 2000 #エッジの存在判定用エッジ色の画素数閾値
@@ -74,7 +74,7 @@ BLUR_FILTER_SIZE = 3 #ぼかしフィルターサイズ
 BALL_COLOR_MIN = np.array([5,200,180]) #ボール色の下閾値
 BALL_COLOR_MAX = np.array([25,255,255]) #ボール色の上閾値
 
-BALL_PIXEL_AREA_THRESHOLD = 2000 #ボールの存在判定用ボール色の画素数閾値
+BALL_PIXEL_AREA_THRESHOLD = 2300 #ボールの存在判定用ボール色の画素数閾値
 BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の画素数閾値
 
 #--------------------------------------------------------------
@@ -105,6 +105,17 @@ right_corner_template = cv2.resize(right_corner_template, (CORNER_TEMPLATE_HEIGH
 right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-TEMPLATE_MATCH_THRESHOLD = 0.7#0.85 #パターンマッチの閾値
+left_corner_template = cv2.imread("tmp/left_corner_template.jpg")
+left_corner_template = cv2.resize(left_corner_template, (30, 30))
+left_corner_template = cv2.cvtColor(left_corner_template, cv2.COLOR_BGR2GRAY)
+ret, LEFT_CORNER_TEMPLATE_WIDE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
+
+right_corner_template = cv2.imread("tmp/right_corner_template.jpg")
+right_corner_template = cv2.resize(right_corner_template, (30, 30))
+right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
+ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
+
+TEMPLATE_MATCH_THRESHOLD = 0.65#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD_WIDE = 0.65#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------

@@ -33,6 +33,7 @@ class MotionPlanningLibrary:
         self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.ball_coordinate_x_wide, self.ball_coordinate_y_wide = self.VISION.detect_ball_wide()
+        self.cornertype = self.VISION.detect_corner_wide()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         self.result_image = self.VISION.display_resultimg()
@@ -85,7 +86,7 @@ class MotionPlanningLibrary:
         self.get_vision_all() #画像情報取得
         
         if self.edge_angle != 0: #エッジのアングルが0以外の時→エッジが存在する時
-            self.MOTION.turn(round(self.edge_angle)) #エッジと並ぶ角度まで旋回
+            self.MOTION.turn(round(0.8*self.edge_angle)) #エッジと並ぶ角度まで旋回
         
         self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体中心までの距離を計算
         
@@ -98,21 +99,31 @@ class MotionPlanningLibrary:
     def round_corner(self): #コーナーを曲がる（テスト中）
         self.get_vision_all()
         if self.cornertype == "NONE":
-            print("None")
+            print("NONE")
         elif self.cornertype == "RIGHT":
-            self.MOTION.turn(90)
-            print(-(parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM-self.corner_y_coordinate))
-            self.MOTION.walk_sideway(-self.corner_y_coordinate)
+            print("RIGHT")
+            self.MOTION.turn(75)
+            self.MOTION.walk_sideway(-(self.corner_y_coordinate+parameterfile.AVOID_CORNER_MM))
         elif self.cornertype == "LEFT":
-            self.MOTION.turn(-90)
-            self.MOTION.walk_sideway(parameterfile.AVOID_CORNER_MM)
-        
+            print("LEFT")
+            self.MOTION.turn(-75)
+            #print(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
+            #self.MOTION.walk_sideway(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
+        elif self.cornertype == "RIGHT_WIDE":
+            print("RIGHT_WIDE")
+            self.MOTION.turn(75)
+            self.MOTION.walk_sideway(-200)
+        elif self.cornertype == "LEFT_WIDE":
+            print("LEFT_WIDE")
+            self.MOTION.turn(-75)
+                    
     ########## Primitive Task ##########
     
     def stand_up(self):
         self.MOTION.stand_up()
         time.sleep(parameterfile.ROBOT_LONG_PAUSE)
         self.MOTION.calibrate_IMU()
+        self.init_angle = self.get_angle_to_goal()
         self.is_standing = True
     
     def left_hand_approach(self):
@@ -131,7 +142,7 @@ class MotionPlanningLibrary:
                            
         if self.cornertype != "NONE":
             self.MOTION.stop_motion()
-            print("Round corner")
+            print("ROUND CORNER")
             self.round_corner()
 
     def turn_to_ball(self):
@@ -157,8 +168,8 @@ class MotionPlanningLibrary:
     def turn_to_goal(self):
         self.MOTION.stop_motion()
         yaw, pitch, roll = self.MOTION.get_body_angle()
-        print(180+yaw)
-        self.MOTION.turn(180+yaw)
+        print(180-yaw)
+        self.MOTION.turn(240)#-yaw)
         self.facing_goal=True
     
     def cross_goal(self):
@@ -222,13 +233,14 @@ class MotionPlanningLibrary:
             return False
     
     def check_facing_goal(self):
-        self.VISION.calibrate_img()
-        self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
+        return self.facing_goal
+        # self.VISION.calibrate_img()
+        # self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         
-        if self.goalline_angle != 0 or self.facing_goal == True:
-            return True
-        else:
-            return False
+        # if self.goalline_angle != 0 or self.facing_goal == True:
+        #     return True
+        # else:
+        #     return False
         
     def check_standing(self):
         return self.is_standing
