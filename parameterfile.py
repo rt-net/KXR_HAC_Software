@@ -4,9 +4,9 @@ import cv2
 #Motion Planning Parameters###################################
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
 
-WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 150
-WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 120
-WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 150
+WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 130
+WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 100
+WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 130
 
 BALL_APPROACH_THRESHOLD = 100
 
@@ -16,7 +16,7 @@ AVOID_CORNER_MM = 200
 #一歩当たりの移動量の設定
 FORWARD_SINGLE_STEP_TRAVEL = 38 #前進1歩あたりの移動量(mm)
 SIDE_SINGLE_STEP_TRAVEL = 50 #横歩行あたりの移動量(mm)
-TURN_SINGLE_STEP_ANGLE = 25 #旋回一回あたりの回転角度(度)
+TURN_SINGLE_STEP_ANGLE = 27#9.5#25 #旋回一回あたりの回転角度(度)
 
 FORWARD_1_SECOND_TRAVEL = 75 #1秒あたりの前進量
 #--------------------------------------------------------------
@@ -106,16 +106,16 @@ right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 left_corner_template = cv2.imread("tmp/left_corner_template.jpg")
-left_corner_template = cv2.resize(left_corner_template, (30, 30))
+left_corner_template = cv2.resize(left_corner_template, (30, 20))
 left_corner_template = cv2.cvtColor(left_corner_template, cv2.COLOR_BGR2GRAY)
 ret, LEFT_CORNER_TEMPLATE_WIDE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 right_corner_template = cv2.imread("tmp/right_corner_template.jpg")
-right_corner_template = cv2.resize(right_corner_template, (30, 30))
+right_corner_template = cv2.resize(right_corner_template, (30, 20))
 right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 TEMPLATE_MATCH_THRESHOLD = 0.65#0.85 #パターンマッチの閾値
-TEMPLATE_MATCH_THRESHOLD_WIDE = 0.7#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD_WIDE = 0.65#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------

@@ -98,13 +98,14 @@ class MotionPlanningLibrary:
                 
     def round_corner(self): #コーナーを曲がる（テスト中）
         self.get_vision_all()
-        self.MOTION.turn(round(self.edge_angle))
+        #self.MOTION.turn(round(self.edge_angle))
         if self.cornertype == "NONE":
             print("NONE")
         elif self.cornertype == "RIGHT":
             print("RIGHT")
+            self.MOTION.walk_forward_timed(10)
             self.MOTION.turn(80)
-            self.MOTION.walk_sideway(-(self.corner_y_coordinate+parameterfile.AVOID_CORNER_MM))
+            #self.MOTION.walk_sideway(-(self.corner_y_coordinate+parameterfile.AVOID_CORNER_MM))
         elif self.cornertype == "LEFT":
             print("LEFT")
             self.MOTION.turn(-80)
@@ -112,8 +113,9 @@ class MotionPlanningLibrary:
             #self.MOTION.walk_sideway(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
         elif self.cornertype == "RIGHT_WIDE":
             print("RIGHT_WIDE")
+            self.MOTION.walk_forward_timed(10)
             self.MOTION.turn(80)
-            self.MOTION.walk_sideway(-250)
+            self.MOTION.walk_sideway(-350)
         elif self.cornertype == "LEFT_WIDE":
             print("LEFT_WIDE")
             self.MOTION.turn(-80)
@@ -125,6 +127,7 @@ class MotionPlanningLibrary:
         time.sleep(parameterfile.ROBOT_LONG_PAUSE)
         self.MOTION.calibrate_IMU()
         self.init_angle = self.get_angle_to_goal()
+        self.MOTION.walk_sideway(10)
         self.is_standing = True
     
     def left_hand_approach(self):
@@ -170,7 +173,7 @@ class MotionPlanningLibrary:
         self.MOTION.stop_motion()
         yaw, pitch, roll = self.MOTION.get_body_angle()
         print(180-yaw)
-        self.MOTION.turn(240)#-yaw)
+        self.MOTION.turn(270)#-yaw)
         self.facing_goal=True
     
     def cross_goal(self):
