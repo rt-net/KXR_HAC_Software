@@ -103,22 +103,22 @@ class MotionPlanningLibrary:
             print("NONE")
         elif self.cornertype == "RIGHT":
             print("RIGHT")
-            self.MOTION.walk_forward_timed(10)
-            self.MOTION.turn(80)
+            self.MOTION.walk_sideway(-100)
+            self.MOTION.walk_forward_timed(500)
+            self.MOTION.turn(90)
             #self.MOTION.walk_sideway(-(self.corner_y_coordinate+parameterfile.AVOID_CORNER_MM))
         elif self.cornertype == "LEFT":
             print("LEFT")
-            self.MOTION.turn(-80)
+            self.MOTION.turn(-90)
             #print(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
             #self.MOTION.walk_sideway(self.corner_y_coordinate-parameterfile.AVOID_CORNER_MM)
         elif self.cornertype == "RIGHT_WIDE":
             print("RIGHT_WIDE")
-            self.MOTION.walk_forward_timed(10)
-            self.MOTION.turn(80)
-            self.MOTION.walk_sideway(-350)
+            self.MOTION.walk_forward_timed(400)
+            self.MOTION.turn(90)
         elif self.cornertype == "LEFT_WIDE":
             print("LEFT_WIDE")
-            self.MOTION.turn(-80)
+            self.MOTION.turn(-90)
                     
     ########## Primitive Task ##########
     
@@ -147,6 +147,7 @@ class MotionPlanningLibrary:
         if self.cornertype != "NONE":
             self.MOTION.stop_motion()
             print("ROUND CORNER")
+            print(self.cornertype)
             self.round_corner()
 
     def turn_to_ball(self):
@@ -231,7 +232,7 @@ class MotionPlanningLibrary:
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
         
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM:
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM+100:
             return True
         else:
             return False

@@ -5,7 +5,7 @@ import cv2
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
 
 WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 130
-WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 100
+WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 120
 WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 130
 
 BALL_APPROACH_THRESHOLD = 100
@@ -115,7 +115,7 @@ right_corner_template = cv2.resize(right_corner_template, (30, 20))
 right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-TEMPLATE_MATCH_THRESHOLD = 0.65#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD = 0.68#0.85 #パターンマッチの閾値
 TEMPLATE_MATCH_THRESHOLD_WIDE = 0.65#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------
