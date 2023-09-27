@@ -50,7 +50,7 @@ class MotionPlanningLibrary:
             self.distance_to_ball_x_pixel = self.ball_coordinate_x_wide-(parameterfile.CAMERA_FRAME_WIDTH/2) #ロボット中心からボールへのx方向距離
             self.distance_to_ball_y_pixel = parameterfile.CAMERA_FRAME_HEIGHT - self.ball_coordinate_y_wide #ロボット中心からボールへのy方向距離
             self.angle_to_ball_degrees = 0.7*(math.degrees(math.atan(self.distance_to_ball_x_pixel/self.distance_to_ball_y_pixel))) #ロボット正面からボールへの角度を計算
-            self.distance_to_ball_y_mm = 150
+            # self.distance_to_ball_y_mm = 150
             print("BALL FAR")
         else:
             self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
@@ -174,13 +174,13 @@ class MotionPlanningLibrary:
         self.MOTION.stop_motion()
         yaw, pitch, roll = self.MOTION.get_body_angle()
         print(180-yaw)
-        self.MOTION.turn(270)#-yaw)
+        self.MOTION.turn(200)#-yaw)
         self.facing_goal=True
     
     def cross_goal(self):
         self.get_vision_all()
         self.MOTION.stop_motion()
-        if self.goalline_angle != 0:
+        if self.goalline_angle != 0 and self.goalline_intercept != 0:
             self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
             print("angle", self.goalline_angle)
             print(self.distance_from_the_edge_mm)
@@ -230,10 +230,12 @@ class MotionPlanningLibrary:
     def check_near_goal(self):
         self.VISION.calibrate_img()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
-        self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
-        
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM+100:
-            return True
+        if self.goalline_angle != 0 and self.goalline_slope != 0 and self.goalline_intercept != 0:
+            self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept)
+            if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM+200:
+                return True
+            else:
+                return False
         else:
             return False
     

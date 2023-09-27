@@ -261,7 +261,15 @@ class VisionLibrary:
         
         
     def display_resultimg(self):#結果画像の表示用関数
-        ret, result = self.cap.read()   
+        ret, result = self.cap.read()
+        try:
+            cv2.line(result, 
+                (int(self.goalline_x1_average), int(self.goalline_y1_average)), 
+                (int(self.goalline_x2_average), int(self.goalline_y2_average)), 
+                (0, 255, 255), thickness=2, lineType=cv2.LINE_4 ) 
+        except:
+            print("errror")
+        return result#self.goal
         if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
             cv2.rectangle(result, 
                           (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
@@ -285,7 +293,7 @@ class VisionLibrary:
                             color=(0, 255, 0),
                             thickness=2,
                             lineType=cv2.LINE_4)
-        return result
+        return self.goal
     
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
         # hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
@@ -435,15 +443,11 @@ class VisionLibrary:
         return self.angle, self.slope, self.intercept #エッジ角度、エッジ切片を返す
     
     def detect_goal(self):
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
-        
-        # v = 1
-        
-        # frame[:,:,(2)] = frame[:,:,(2)]*v  # 明度の計算
-        
+        frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_MIN, parameterfile.GOAL_COLOR_MAX)   #エッジ赤線をマスク
-
+        self.goal = frame_mask
+        
         blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE_GOAL) #ぼかしフィルタ
         line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
 
@@ -453,7 +457,7 @@ class VisionLibrary:
         self.goalline_slope = 0 
         self.goalline_intercept = 0 #a、bどちらも0を初期値
         
-        if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
+        if line_pixel_area > parameterfile.GOAL_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
     
             field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
@@ -475,6 +479,8 @@ class VisionLibrary:
                 line_parameter_list = lines[:,0]
                 rho = line_parameter_list[:,0]
                 theta = line_parameter_list[:,1]
+                
+                print(theta_std_dev)
                 
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_list = theta

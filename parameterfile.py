@@ -88,6 +88,7 @@ BALL_POS_FROM_ROBOT = 80
 GOAL_COLOR_MIN = np.array([0, 0, 254]) #ゴールライン色の下閾値
 GOAL_COLOR_MAX = np.array([1, 1, 255]) #ゴールライン色の上閾値
 
+GOAL_PIXEL_AREA_THRESHOLD = 4000
 BLUR_FILTER_SIZE_GOAL = 9
 
 #--------------------------------------------------------------

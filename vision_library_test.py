@@ -17,7 +17,8 @@ while True:
     # print(linea, lineb)
     # print(ballx, bally)
     # print(cornertype, cornerx, cornery)
-    print(VISION.detect_corner_wide())
+    # print(VISION.detect_corner_wide())
+    VISION.detect_goal()
     
     resultimg = VISION.display_resultimg()
     cv2.imshow("frame3", resultimg)
