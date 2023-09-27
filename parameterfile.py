@@ -4,9 +4,9 @@ import cv2
 #Motion Planning Parameters###################################
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
 
-WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 130
-WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 120
-WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 130
+WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM = 160
+WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM = 140
+WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM = 160
 
 BALL_APPROACH_THRESHOLD = 100
 
@@ -79,8 +79,8 @@ BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の
 
 #--------------------------------------------------------------
 #ボール位置の指定
-BALL_POS_TOLERANCE_MM = 120
-BALL_POS_FROM_ROBOT = 80
+BALL_POS_TOLERANCE_MM = 140
+BALL_POS_FROM_ROBOT = 100
 
 #--------------------------------------------------------------
 
@@ -89,6 +89,15 @@ GOAL_COLOR_MIN = np.array([0, 0, 254]) #ゴールライン色の下閾値
 GOAL_COLOR_MAX = np.array([1, 1, 255]) #ゴールライン色の上閾値
 
 GOAL_PIXEL_AREA_THRESHOLD = 4000
+BLUR_FILTER_SIZE_BALL_LINE = 9
+
+#--------------------------------------------------------------
+
+#ボールラインの色範囲指定(HSV)
+BALL_LINE_COLOR_MIN = np.array([90, 60, 60]) #ゴールライン色の下閾値
+BALL_LINE_COLOR_MAX = np.array([120, 255, 255]) #ゴールライン色の上閾値
+
+BALL_LINE_PIXEL_AREA_THRESHOLD = 3000
 BLUR_FILTER_SIZE_GOAL = 9
 
 #--------------------------------------------------------------
@@ -116,7 +125,7 @@ right_corner_template = cv2.resize(right_corner_template, (30, 20))
 right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-TEMPLATE_MATCH_THRESHOLD = 0.68#0.85 #パターンマッチの閾値
-TEMPLATE_MATCH_THRESHOLD_WIDE = 0.65#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD = 0.7#0.85 #パターンマッチの閾値
+TEMPLATE_MATCH_THRESHOLD_WIDE = 0.7#0.85 #パターンマッチの閾値
 
 #--------------------------------------------------------------

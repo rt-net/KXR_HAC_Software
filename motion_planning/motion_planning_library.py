@@ -31,8 +31,8 @@ class MotionPlanningLibrary:
         """
         self.VISION.calibrate_img()
         self.edge_angle, self.edge_slope, self.edge_intercept = self.VISION.detect_edge_using_numpy_calc()
-        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.ball_coordinate_x_wide, self.ball_coordinate_y_wide = self.VISION.detect_ball_wide()
+        self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         self.cornertype = self.VISION.detect_corner_wide()
         self.cornertype, self.corner_x_coordinate, self.corner_y_coordinate = self.VISION.detect_corner()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
@@ -49,8 +49,8 @@ class MotionPlanningLibrary:
             print(self.ball_coordinate_x_wide, self.ball_coordinate_y_wide)
             self.distance_to_ball_x_pixel = self.ball_coordinate_x_wide-(parameterfile.CAMERA_FRAME_WIDTH/2) #ロボット中心からボールへのx方向距離
             self.distance_to_ball_y_pixel = parameterfile.CAMERA_FRAME_HEIGHT - self.ball_coordinate_y_wide #ロボット中心からボールへのy方向距離
-            self.angle_to_ball_degrees = 0.7*(math.degrees(math.atan(self.distance_to_ball_x_pixel/self.distance_to_ball_y_pixel))) #ロボット正面からボールへの角度を計算
-            # self.distance_to_ball_y_mm = 150
+            self.angle_to_ball_degrees = 0.6*(math.degrees(math.atan(self.distance_to_ball_x_pixel/self.distance_to_ball_y_pixel))) #ロボット正面からボールへの角度を計算
+            self.distance_to_ball_y_pixel = 200
             print("BALL FAR")
         else:
             self.distance_to_ball_x_mm = self.ball_coordinate_x-(parameterfile.BEV_FRAME_WIDTH_MM/2) #ロボット中心からボールへのx方向距離
@@ -134,6 +134,10 @@ class MotionPlanningLibrary:
         """execute a loop of left hand approach
         """
         self.get_vision_all()
+        
+        if self.edge_angle == 0 and self.edge_intercept != 0:
+            MOTION.turn(-90)
+            
         if self.edge_angle != 0:
             self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
         
@@ -174,8 +178,12 @@ class MotionPlanningLibrary:
         self.MOTION.stop_motion()
         yaw, pitch, roll = self.MOTION.get_body_angle()
         print(180-yaw)
-        self.MOTION.turn(200)#-yaw)
+        self.MOTION.turn(360-yaw)#-yaw)
         self.facing_goal=True
+        
+    def align_to_ball(self):
+        self.get_vision_all()
+        self.MOTION.stop_motion()
     
     def cross_goal(self):
         self.get_vision_all()
@@ -189,8 +197,26 @@ class MotionPlanningLibrary:
                 self.MOTION.turn(-(90-self.goalline_angle))
             else:
                 self.MOTION.turn(90+self.goalline_angle)
+        
+        count = 0
+        
+        while True: 
+            self.get_vision_all()
+            if self.edge_angle != 0:
+                self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept)
             
-        self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
+            if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM:
+                self.MOTION.stop_motion()
+                self.align_with_field_edge()
+                
+            if self.MOTION.is_button_pressed == False:
+                self.MOTION.walk_forward_timed(100)
+                
+            count = count+1
+            
+            if count > 2:
+                break
+        #self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
         print("GOAL")
         self.in_goal = True
         
@@ -198,7 +224,7 @@ class MotionPlanningLibrary:
     
     def check_know_ball_pos(self):
         self.get_vision_all() #画像データ取得
-        if self.ball_coordinate_x_wide != 0:
+        if self.ball_coordinate_x_wide != 0:#_wide != 0:
             return True
         else:
             return False
@@ -207,8 +233,8 @@ class MotionPlanningLibrary:
         self.get_vision_all() #画像データ取得
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
-        elif self.ball_coordinate_x_wide > (parameterfile.CAMERA_FRAME_WIDTH/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.CAMERA_FRAME_WIDTH/2+parameterfile.BALL_POS_TOLERANCE_MM):
-            return True
+        # elif self.ball_coordinate_x_wide > (parameterfile.CAMERA_FRAME_WIDTH/2-2*parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.CAMERA_FRAME_WIDTH/2+2*parameterfile.BALL_POS_TOLERANCE_MM):
+        #     return True
         else:
             return False
     
