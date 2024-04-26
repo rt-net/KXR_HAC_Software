@@ -5,12 +5,8 @@ import sys
 
 import numpy as np
 
-# from vision.vision_library import VisionLibrary
-# from motion_control.motion_control_library import MotionLibrary
-# from motion_planning.motoin_planning_library import MotionPlanningLibrary
-
 class WorldState:
-    def __init__(self, **kwargs): #world_stateの初期化 **kwargsはキーワード引数を辞書として受け取ること　名称がkwargsなのは慣例
+    def __init__(self, **kwargs): #world_stateの初期化 **kwargsはキーワード引数を辞書型で受け取る
         self.state = kwargs #辞書型のworld_state初期値をself.stateに格納
 
     def set_update_functions(self, **kwargs):
