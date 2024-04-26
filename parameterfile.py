@@ -12,6 +12,8 @@ BALL_APPROACH_THRESHOLD = 100
 
 AVOID_CORNER_MM = 200
 
+ALIGN_WITH_FIELD_EDGE_CORRECTION_FACTOR = 0.8
+
 #Motion Control Parameters#####################################
 #一歩当たりの移動量の設定
 FORWARD_SINGLE_STEP_TRAVEL = 38 #前進1歩あたりの移動量(mm)
@@ -81,6 +83,7 @@ BALL_PIXEL_AREA_THRESHOLD_WIDE = 500 #ボールの存在判定用ボール色の
 #ボール位置の指定
 BALL_POS_TOLERANCE_MM = 140
 BALL_POS_FROM_ROBOT = 100
+ROBOT_TO_BALL_ANGLE_CONVERSION = 0.6
 
 #--------------------------------------------------------------
 
