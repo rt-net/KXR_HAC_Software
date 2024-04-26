@@ -205,10 +205,6 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         print(180-yaw) 
         self.MOTION.turn(360-yaw) #ゴールラインに正対するように旋回
         self.facing_goal=True #ゴールに向いているかどうかのT/Fを更新
-        
-    # def align_to_ball(self):
-    #     self.get_vision_all()
-    #     self.MOTION.stop_motion()
     
     def cross_goal(self): #ゴールに入る
         self.get_vision_all() #全てのカメラ情報を取得
@@ -244,7 +240,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             
             if count > 2:
                 break
-        #self.MOTION.walk_forward_timed(self.distance_from_the_edge_mm+parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM)
+            
         print("GOAL")
         self.in_goal = True #ゴールに入っているかどうかのT/Fを更新
         
@@ -252,7 +248,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
     
     def check_know_ball_pos(self): #ボールの位置を把握しているかどうかのT/Fを返す
         self.get_vision_all() #全てのカメラ情報を取得
-        if self.ball_coordinate_x_wide != 0:#_wide != 0:
+        if self.ball_coordinate_x_wide != 0:
             return True
         else:
             return False
@@ -261,13 +257,10 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         self.get_vision_all() #全てのカメラ情報を取得
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
-        # elif self.ball_coordinate_x_wide > (parameterfile.CAMERA_FRAME_WIDTH/2-2*parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.CAMERA_FRAME_WIDTH/2+2*parameterfile.BALL_POS_TOLERANCE_MM):
-        #     return True
         else:
             return False
     
     def check_near_ball(self): #ボールに十分近いかどうかのT/Fを返す
-        #print("check near ball")
         self.VISION.calibrate_img()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         if self.ball_coordinate_y > parameterfile.BEV_FRAME_HEIGHT_MM-parameterfile.BALL_POS_FROM_ROBOT:

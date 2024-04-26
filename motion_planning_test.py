@@ -1,3 +1,5 @@
+#motion_planning_library中のそれぞれのモジュールの動作確認用
+
 import math
 import time
 import sys
@@ -15,12 +17,9 @@ while True:
     # print(PLANNING.check_know_ball_pos())
     #PLANNING.get_vision_all()
     #PLANNING.get_angle_to_goal()
+    # PLANNING.round_corner()
+    # PLANNING.align_with_field_edge()
+    # PLANNING.cross_goal()
     cv2.imshow("frame3", PLANNING.display_image())
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    
-    # PLANNING.round_corner()
-    
-    # PLANNING.align_with_field_edge()
-    
-    # PLANNING.cross_goal()

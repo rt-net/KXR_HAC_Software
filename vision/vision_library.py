@@ -259,19 +259,8 @@ class VisionLibrary:
             
         return self.corner_type #コーナー座標、種別を返す
         
-        
     def display_resultimg(self):#結果画像の表示用関数
         ret, result = self.cap.read()
-        # try:
-        #     cv2.line((self.goal), 
-        #         (int(self.goalline_x1_average), int(self.goalline_y1_average)), 
-        #         (int(self.goalline_x2_average), int(self.goalline_y2_average)), 
-        #         (0, 255, 255), thickness=2, lineType=cv2.LINE_4 ) 
-        # except:
-        #     print("errror")
-        return self.goal
-        
-        return self.ball_line
 
         if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
             cv2.rectangle(result, 
@@ -296,13 +285,8 @@ class VisionLibrary:
                             color=(0, 255, 0),
                             thickness=2,
                             lineType=cv2.LINE_4)
-        return self.goal
     
         result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
-        # hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        # frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
-        # frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
-        # frame_mask = frame_mask_high | frame_mask_low
         
         if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
             #見えている線の合成の描画
@@ -365,7 +349,7 @@ class VisionLibrary:
                             thickness=2,
                             lineType=cv2.LINE_4)
                 
-        #return result
+        return result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み
