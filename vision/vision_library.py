@@ -22,7 +22,7 @@ def load_calibration_file(mtx_path, dist_path): #キャリブレーションパ�
         dist = np.loadtxt(dist_path, delimiter=',')
     except Exception as e:
         raise e
-    return mtx, dist #パラメータ配列を返す
+    return mtx, dist #キャリブレーションパラメータ配列を返す
 
 class VisionLibrary:
     def __init__(self):             
@@ -54,9 +54,9 @@ class VisionLibrary:
         print("[カメラ初期化完了]")
         
         #各要素の検出状態の初期化
-        self.is_found_edge = False
-        self.is_found_ball = False
-        self.corner_type = 0
+        self.is_found_edge = False #フィールドのエッジが見えているかどうかのT/F
+        self.is_found_ball = False #ボールが見えているかどうかのT/F
+        self.corner_type = "NONE" #見えているコーナーの種類（最初はNONE）
         
     def calibrate_img(self):      
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
@@ -65,99 +65,17 @@ class VisionLibrary:
         lane_shape = np.float32([parameterfile.BEV_TOP_LEFT, 
                                  parameterfile.BEV_TOP_RIGHT, 
                                  parameterfile.BEV_BOTTOM_LEFT, 
-                                 parameterfile.BEV_BOTTOM_RIGHT]) #鳥瞰図変換のパラメータ　画角内に4つの角が収まる長方形を置いたときの角の場所
+                                 parameterfile.BEV_BOTTOM_RIGHT]) #鳥瞰図変換のパラメータ　画角内に4つの角が収まる長方形を置いたときのそれぞれの角の場所（すでにparameterfileに入力済み）
         img_shape = np.float32([(0,0),
                                 (parameterfile.BEV_FRAME_WIDTH_MM,0),
                                 (0,parameterfile.BEV_FRAME_HEIGHT_MM),
-                                (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)]) #上記長方形の大きさ
-        BEV_transform_parameter = cv2.getPerspectiveTransform(lane_shape, img_shape) #鳥瞰図変換パラメータMを得る
+                                (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)]) #上記、鳥瞰図変換のパラメータ取得に用いた長方形の大きさ
+        BEV_transform_parameter = cv2.getPerspectiveTransform(lane_shape, img_shape) #鳥瞰図変換用のパラメータを得る
         self.BEV = cv2.warpPerspective(frame_undistort, 
                                        BEV_transform_parameter, 
                                        (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
         
-        # self.BEV = cv2.warpPerspective(frame, 
-        #                                BEV_transform_parameter, 
-        #                                (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
-        
         return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
-        
-    def detect_edge(self): #エッジ検出の関数
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
-        
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
-        frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
-        frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
-        frame_mask = frame_mask_high | frame_mask_low
-        
-        blur = cv2.medianBlur(frame_mask,parameterfile.BLUR_FILTER_SIZE) #ぼかしフィルタ
-        line_center_of_gravity = cv2.moments(blur, False) #線の重心座標を得る
-
-        line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
-        
-        angle = 0 #エッジ角度の初期値
-        self.edge_a = 0 
-        self.edge_b = 0 #a、bどちらも0を初期値
-        
-        if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
-            self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
-    
-            field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
-            
-            dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
-            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
-            
-            lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
-            LINE_LENGTH = 1000 #描画する線の長さ
-            rho_total = 0
-            theta_total = 0
-
-            if type(lines) == np.ndarray: #エッジが検出されている時
-                theta_std_dev = np.nanstd(lines, 0)
-                theta_std_dev = theta_std_dev[0][1] #θの標準偏差を得る
-                
-                #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
-                #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
-                line_parameter_list = lines[:,0]
-                rho = line_parameter_list[:,0]
-                theta = line_parameter_list[:,1]
-                
-                if theta_std_dev < 1: #θの標準偏差が1未満である時
-                    theta_list = theta
-                    rho_list = rho
-                else: #θの標準偏差が1以上の時                 
-                    theta_list = np.where(theta>math.pi/2, theta-math.pi, theta)
-                    rho_list = np.where(theta>math.pi/2, -rho, rho)
-                
-                rho_average = np.average(rho_list)
-                theta_average = np.average(theta_list) 
-                                       
-                a = math.cos(theta_average)
-                b = math.sin(theta_average)
-                x0 = a * rho_average
-                y0 = b * rho_average
-                
-                self.x1_average = (x0 - LINE_LENGTH * b)
-                self.x2_average = (x0 + LINE_LENGTH * b)
-                self.y1_average = (y0 + LINE_LENGTH * a)
-                self.y2_average = (y0 - LINE_LENGTH * a)           
-                
-                self.edge_a = (self.y2_average-self.y1_average)/(self.x2_average-self.x1_average) #傾きを導出
-                self.edge_b = self.y1_average/(len(lines)) - self.edge_a*self.x1_average/(len(lines)) #切片を導出
-                
-                self.angle = int(math.degrees(math.atan(-(self.y2_average-self.y1_average)/(self.x2_average-self.x1_average)))) #角度の計算(度)
-
-                #線の角度について機体前後方向と平行が0度になるように計算
-                if self.angle < 0:
-                    self.angle = -(self.angle + 90) 
-                else:
-                    self.angle = -(self.angle - 90)
-                
-        if self.edge_a == 0 and self.edge_b == 0:
-            self.is_found_edge = False
-        else:
-            self.is_found_edge = True
-            
-        return self.edge_a, self.edge_b #エッジ角度、エッジ切片を返す
        
     def detect_ball(self): #ボール検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
@@ -174,13 +92,13 @@ class VisionLibrary:
             self.ball_pixel_coordinate_y = 0
         
         if self.ball_pixel_coordinate_x == 0 and self.ball_pixel_coordinate_y == 0:
-            self.is_found_ball = False
+            self.is_found_ball = False #ボールが見つかっていないとき、ball_pixel_coordinate_xとball_pixel_coordinate_yには0が格納される
         else:
             self.is_found_ball = True
         
-        return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y
+        return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y #BEV画像中のボールのx,y座標を返す
     
-    def detect_ball_wide(self):
+    def detect_ball_wide(self): #ボール検出の関数（BEV画像ではなく、カメラ画像そのままの広い画角でボールを検出する）
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
@@ -194,11 +112,11 @@ class VisionLibrary:
             self.ball_pixel_coordinate_y_wide = 0
         
         if self.ball_pixel_coordinate_x_wide == 0 and self.ball_pixel_coordinate_y_wide == 0:
-            self.is_found_ball = False
+            self.is_found_ball = False #ボールが見つかっていないとき、ball_pixel_coordinate_x_wideとball_pixel_coordinate_y_wideには0が格納される
         else:
             self.is_found_ball = True
         
-        return self.ball_pixel_coordinate_x_wide, self.ball_pixel_coordinate_y_wide
+        return self.ball_pixel_coordinate_x_wide, self.ball_pixel_coordinate_y_wide #カメラ画像中のボールのx,y座標を返す    
 
     def detect_corner(self): #コーナー検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
@@ -224,14 +142,14 @@ class VisionLibrary:
             self.corner_pixel_coordinate_x = sum(right_corner_pixel_coordinate[1])/len(right_corner_pixel_coordinate[1]) #右コーナーのx座標を取得 類似度が閾値を上回る箇所の座標の平均を取る
             self.corner_type = "LEFT" #コーナー種別を2に設定
         else: #何も検出されなかったとき
-            #座標、コーナー種別を0に設定
+            #座標を0に設定、コーナー種別はNONE
             self.corner_pixel_coordinate_y = 0 
             self.corner_pixel_coordinate_x = 0
             self.corner_type = "NONE"
             
         return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
     
-    def detect_corner_wide(self): #コーナー検出の関数
+    def detect_corner_wide(self): #コーナー検出の関数（BEV画像ではなく、カメラ画像そのままの広い画角でボールを検出する）
         ret, frame = self.cap.read()     
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
@@ -365,21 +283,21 @@ class VisionLibrary:
         line_pixel_area = cv2.countNonZero(blur) #線の面積を得る
         
         self.angle = 0 #エッジ角度の初期値
-        self.slope = 0 
-        self.intercept = 0 #a、bどちらも0を初期値
+        self.slope = 0 #エッジの傾き
+        self.intercept = 0 #エッジの切片
         
         if line_pixel_area > parameterfile.EDGE_PIXEL_AREA_THRESHOLD:#見えるエッジの面積がエッジ 存在判定の閾値を超えた時      
             self.center_of_gravity_x,self.center_of_gravity_y= int(line_center_of_gravity["m10"]/line_center_of_gravity["m00"]), int(line_center_of_gravity["m01"]/line_center_of_gravity["m00"]) #線の重心座標を代入
     
-            field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジ検出
+            field_edges = cv2.Canny(frame_mask, 50, 150, apertureSize = 3) #エッジを強調する
             
-            dilation_filter = np.ones((2,2),np.uint8) #膨張フィルタ
-            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #膨張
+            dilation_filter = np.ones((2,2),np.uint8) #2×2の膨張フィルタを用意
+            dilation = cv2.dilate(field_edges,dilation_filter,iterations = 1) #エッジを膨張させる
             
-            lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換
-            LINE_LENGTH = 1000 #描画する線の長さ
-            rho_total = 0
-            theta_total = 0
+            lines = cv2.HoughLines(dilation, 1, (np.pi/180), 80) #ハフ変換で直線を検出
+            LINE_LENGTH = 1000 #描画する線の長さを指定
+            rho_total = 0 #ρの合計を初期化
+            theta_total = 0 #θの合計を初期化
 
             if type(lines) == np.ndarray: #エッジが検出されている時
                 theta_std_dev = np.nanstd(lines, 0)
@@ -388,8 +306,8 @@ class VisionLibrary:
                 #線のパラメータを不連続なρとθで表すためパラメータ平均値の算出に場合分けが必要
                 #画角垂直方向に線がある時θは0付近とπ付近になり得るため標準偏差に基づいて場合分けを行う
                 line_parameter_list = lines[:,0]
-                rho = line_parameter_list[:,0]
-                theta = line_parameter_list[:,1]
+                rho = line_parameter_list[:,0] #ハフ変換で検出した線のパラメータからρを抜き出す
+                theta = line_parameter_list[:,1] #ハフ変換で検出した線のパラメータからθを抜き出す
                 
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_list = theta
@@ -423,7 +341,7 @@ class VisionLibrary:
                     self.angle = -(self.angle - 90)
                 
         if self.slope == 0 and self.intercept == 0:
-            self.is_found_edge = False
+            self.is_found_edge = False#エッジが見つかっていないとき、edge_slopeとedge_interceptには0が格納される
         else:
             self.is_found_edge = True
             
@@ -534,7 +452,6 @@ class VisionLibrary:
             self.is_found_goal = True
         
         return self.goalline_angle, self.goalline_slope, self.goalline_intercept #エッジ角度、エッジ切片を返す
-    
     
     def detect_ball_line(self):
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
