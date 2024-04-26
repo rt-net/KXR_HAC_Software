@@ -1,3 +1,5 @@
+#vision_libraryの各モジュールの動作確認用
+
 import cv2
 import time
 
@@ -21,10 +23,10 @@ while True:
     #VISION.detect_ball_line()
     VISION.detect_goal()
     resultimg = VISION.display_resultimg()
-    cv2.imshow("frame3", resultimg)
     
     # finish = time.time()
     
     #print(finish-start)
+    cv2.imshow("frame3", resultimg)
     if cv2.waitKey(delay) & 0xFF == ord('q'):
         break

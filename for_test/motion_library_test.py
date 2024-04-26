@@ -1,3 +1,5 @@
+#motion_libraryの各モジュールの動作確認用
+
 from motion_control.motion_control_library import MotionLibrary
 
 MOTION = MotionLibrary()
