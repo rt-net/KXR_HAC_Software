@@ -182,7 +182,6 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                #time.sleep(parameterfile.ROBOT_REGULAR_PAUSE)
                 step_counter = step_counter+1
         else: #移動量が正の時(右へ移動の時)
             while step_counter < step_count: #定められた歩行回数まで繰り返し                
@@ -195,7 +194,6 @@ class MotionLibrary:
                         break
                     if motion_number == 0: #モーション番号が0のときは再生されていない状態
                         break
-                #time.sleep(parameterfile.ROBOT_REGULAR_PAUSE)
                 step_counter = step_counter+1
                 
     def turn(self, turn_angle):

@@ -3,7 +3,7 @@
 from motion_control.motion_control_library import MotionLibrary
 
 MOTION = MotionLibrary() #MotionLibraryクラスのインスタンス生成
-MOTION.set_plot()
+MOTION.enable_plot() #自己位置のプロットを有効化
 
 while True:
     #移動系のモーション
@@ -20,4 +20,6 @@ while True:
     MOTION.touch_ball() #ボールに触るモーションを再生する
     MOTION.stand_up() #仰向けから立ち上がるモーションを再生する
     
-    #
+    #簡易的な自己位置のプロット
+    MOTION.plot_graph() #IMUと歩幅に基づいた自己位置をプロットする
+    
