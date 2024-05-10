@@ -116,7 +116,7 @@ class MotionLibrary:
         
     def touch_ball(self):
         """Play ball-touch motion"""
-        self.rcb4.motionPlay(parameterfile.RCB4_TOUCH_BALL) #モーション番号3(左横移動)を再生
+        self.rcb4.motionPlay(parameterfile.RCB4_TOUCH_BALL) #ボールに触るモーションを再生
         while True: #モーションの再生が終わるまで繰り返し
             motion_number = self.rcb4.getMotionPlayNum() #現在再生されているモーション番号を取得
             if motion_number < 0: #モーション番号が0より小さい場合はエラー
@@ -231,7 +231,7 @@ class MotionLibrary:
                 step_counter = step_counter+1
                 
     def calculate_field_coordinate(self, motion_type_or_time):
-        """Calculate current coordinate in the field by IMU based dead reckoning
+        """Calculate current coordinate in the field by IMU based dead-reckoning
         Parameters:
         ----------
         motion_type_or_time: char or float
