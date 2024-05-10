@@ -20,7 +20,7 @@ class WorldState:
     def update_state_with_sensor_data(self): 
         #print("Updating World State")
         for state_name, update_function in self.state_check_list.items():  #state_check_listのそれぞれの内容に従いセンサーデータからstateを更新
-            # print("WorldState: updating", state_name)
+            print("WorldState: updating", state_name)
             self.state[state_name] = update_function()
         print(self.state)
 
