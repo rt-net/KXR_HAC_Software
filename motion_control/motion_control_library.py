@@ -282,8 +282,8 @@ class MotionLibrary:
     def enable_plot(self):
         """enable plot and set plot parameters"""
         self.use_coordinate_plot_graph = True #プロットの要求を設定する
-        self.axis.set_xlim(GRAPH_X_AXIS_MINIIMUM, GRAPH_X_AXIS_MAXIMMUM) #グラフのX軸の最大/最小値の設定
-        self.axis.set_ylim(GRAPH_Y_AXIS_MINIMUM, GRAPH_Y_AXIS_MAXIMUM) #グラフのY軸の最大/最小値の設定
+        self.axis.set_xlim(parameterfile.GRAPH_X_AXIS_MINIMUM, parameterfile.GRAPH_X_AXIS_MAXIMUM) #グラフのX軸の最大/最小値の設定
+        self.axis.set_ylim(parameterfile.GRAPH_Y_AXIS_MINIMUM, parameterfile.GRAPH_Y_AXIS_MAXIMUM) #グラフのY軸の最大/最小値の設定
         self.axis.set_aspect('equal') #グラフの形状の設定
         self.coordinate_history_x.append(self.field_absolute_coordinate_x) #Xの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
         self.coordinate_history_y.append(self.field_absolute_coordinate_y) #Yの値の配列に現在のフィールド絶対座標を代入(初期値なので0)
