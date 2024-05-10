@@ -112,19 +112,16 @@ CORNER_TEMPLATE_HEIGHT, CORNER_TEMPLATE_WIDTH = 66,66 #コーナー部のサイ�
 BINARIZATION_THRESHOLD = 30
 #コーナーのテンプレートマッチ元画像の読み込み
 
-print("ABC")
-pprint.pprint(sys.path)
-
-left_corner_template = cv2.imread("tmp/left_corner_template_gray.jpg")
+left_corner_template = cv2.imread("../tmp/left_corner_template_gray.jpg")
 ret, LEFT_CORNER_TEMPLATE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-right_corner_template = cv2.imread("tmp/right_corner_template_gray.jpg")
+right_corner_template = cv2.imread("../tmp/right_corner_template_gray.jpg")
 ret, RIGHT_CORNER_TEMPLATE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-left_corner_template = cv2.imread("tmp/left_corner_template_wide_gray.jpg")
+left_corner_template = cv2.imread("../tmp/left_corner_template_wide_gray.jpg")
 ret, LEFT_CORNER_TEMPLATE_WIDE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-right_corner_template = cv2.imread("tmp/right_corner_template_wide_gray.jpg")
+right_corner_template = cv2.imread("../tmp/right_corner_template_wide_gray.jpg")
 ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 TEMPLATE_MATCH_THRESHOLD = 0.7#0.85 #パターンマッチの閾値

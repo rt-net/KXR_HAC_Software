@@ -2,16 +2,11 @@
 import sys
 import os
 
-import pprint
-pprint.pprint(sys.path)
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #一つ上のディレクトリへの検索パスの追加
 from motion_control.motion_control_library import MotionLibrary
 
-pprint.pprint(sys.path)
-
 MOTION = MotionLibrary() #MotionLibraryクラスのインスタンス生成
-MOTION.enable_plot() #自己位置のプロットを有効化
+# MOTION.enable_plot() #自己位置のプロットを有効化
 
 while True:
     #移動系のモーション
