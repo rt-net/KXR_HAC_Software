@@ -5,11 +5,9 @@
 近藤科学社製KXR-L2を自律化し，株式会社アールティが主催する大会 Humanoid Autonomous Challenge (HAC)に参加するためのサンプルプログラムです．
 Hierarchical Task Network（階層化型タスクネットワーク）に基づいて，周囲の環境を認識しながらロボットが次の行動を計画，実行します．<br>
 
-Humanoid Autonomous Challengeについてはこちらを参照してください．<br>
-(https://www.rt-shop.jp/blog/archives/10714)<br>
+Humanoid Autonomous Challengeについては[こちらの記事](https://www.rt-shop.jp/blog/archives/10714)を参照してください．<br>
 
-KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した以下のハードウェア上で動作することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．<br>
-(KXR_HAC_Hardware : https://github.com/rt-net/KXR_HAC_Hardware.git)<br>
+KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Hardware](https://github.com/rt-net/KXR_HAC_Hardware.git)上で動作することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．<br>
 
 ## 動作環境
 以下の環境にて動作確認を行っています．
@@ -17,8 +15,13 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した以下の�
 - Heart to Heart 4 (v2.4.0)
 - Linux OS
     - Raspbian GNU/Linux 11 (bullseye)
+- コンソール
+    - Windows 10 Home
+    - VNC Viewer
 - ロボット
     - KXR-L2（KXR_HAC_Hardware準拠）
+
+環境構築については，[こちらの記事](https://rt-net.jp/humanoid/archives/5037)も参照してください．
 
 ## フォルダ構成
 <pre>
@@ -96,6 +99,11 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ロボットを動かさずにHTN_plannerを実行し，行動計画の流れを確認できます．<br>
 ### sample
 画像認識やモーション再生などの動作を確認するためのサンプルファイルが格納されています．
+
+## 実行方法
+1. ロボット，RaspberryPiを起動し．フィールドにロボットを配置する．
+2. RaspberryPiと同じネットワークにあるコンソールPCで，VNC Viewerを立ち上げRaspberryPiのデスクトップにアクセスする．
+3. RaspberryPiでターミナルを起動し，```run_HTN_planner```を実行する．
 
 ## 免責事項
 当ソフトウェアの使用中に生じたいかなる損害も株式会社アールティでは一切の責任を負いかねます。 
