@@ -1,4 +1,5 @@
 import time
+import random
 
 class MotionPlanningLibrarySample:
     def __init__(self):
@@ -15,38 +16,38 @@ class MotionPlanningLibrarySample:
     
     def stand_up(self): 
         print("------STAND UP------")
-        self.standing = True
+        self.standing = random.choice([True, False])
         time.sleep(1)
 
     def walk_in_field(self):
         print("------WALK AROUND------")
-        self.know_ball_pos = True
+        self.know_ball_pos = random.choice([True, False])
         time.sleep(1)
 
     def turn_to_ball(self):
         print("------TURN TO BALL------")
-        self.facing_ball = True
+        self.facing_ball = random.choice([True, False])
         time.sleep(1)
         
     def walk_to_ball(self):
         print("------WALK TO BALL------")
-        self.near_ball = True
+        self.near_ball = random.choice([True, False])
         time.sleep(1)
 
     def extend_arm(self):
         print("------EXTEND ARM------")
-        self.touched_ball = True
+        self.touched_ball = random.choice([True, False])
         time.sleep(1)
         
     def turn(self):
         print("------TURN------")
-        self.facing_goal = True
-        self.near_goal = True
+        self.facing_goal = random.choice([True, False])
+        self.near_goal = random.choice([True, False])
         time.sleep(1)
         
     def walk_into_goal(self):
         print("------WALK INTO GOAL------")
-        self.in_goal = True
+        self.in_goal = random.choice([True, False])
         time.sleep(1)
         
     #WorldState更新のために，周辺環境を確認するための関数

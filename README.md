@@ -2,22 +2,25 @@
 
 ![jpg](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/5ae96d94-1070-4794-992b-afbceb43f62b)
 
-近藤科学社製KXR-L2を自律化し，株式会社アールティが主催する大会 Humanoid Autonomous Challenge (HAC)に参加するためのソフトウェアです．<br>
+近藤科学社製KXR-L2を自律化し，株式会社アールティが主催する大会 Humanoid Autonomous Challenge (HAC)に参加するためのサンプルプログラムです．
+Hierarchical Task Network（階層化型タスクネットワーク）に基づいて，周囲の環境を認識しながらロボットが次の行動を計画，実行します．<br>
 
-Humanoid Autonomous Challenge<br>
+Humanoid Autonomous Challengeについてはこちらを参照してください．<br>
 (https://www.rt-shop.jp/blog/archives/10714)<br>
 
-KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した以下のハードウェア上で使用することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．<br>
-(https://github.com/rt-net/KXR_HAC_Software.git)
+KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した以下のハードウェア上で動作することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．<br>
+(KXR_HAC_Hardware : https://github.com/rt-net/KXR_HAC_Hardware.git)<br>
 
-## ディレクトリ構成
-```vision```
-```motion_control```
-```motion_planning```
-```tmp```
-```HTN_sample```
-```sample```
+## 動作環境
+以下の環境にて動作確認を行っています．
+- Python 3.9.2
+- Heart to Heart 4 (v2.4.0)
+- Linux OS
+    - Raspbian GNU/Linux 11 (bullseye)
+- ロボット
+    - KXR-L2（KXR_HAC_Hardware準拠）
 
+## フォルダ構成
 <pre>
 ├── README.md
 ├── Rcb4BaseLib.py
@@ -50,8 +53,57 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した以下の�
     └── vision_library_test.py
  </pre>
 
+## ファイル説明
+```Rcb4BaseLib.py```<br>
+近藤科学社の提供する，Pythonが動作する環境からコントロールボード RCB-4HVと連携するためのライブラリです．ロボットに動作指令を送る際は，このライブラリから関数を呼び出して用います．<br>
+
+```parameterfile.py```<br>
+画像認識，行動計画等のパラメータを一元的に格納したファイルです．<br>
+
+```HTN_planner.py```<br>
+Hierarchical Task Networkに基づき動作を選択するためのモジュールです．<br>
+
+```run_HTN_planner.py```<br>
+HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
+
+### vision
+```vision_library```<br>
+カメラを用いた画像認識関連のクラス，関数をまとめたファイルです．
+### motion_control
+```motion_control_library```<br>
+ロボットに歩行や起き上がりなどのモーション再生の指令を送るクラス，関数をまとめたファイルです．各モーションデータはロボット側のコントロールボード RCB-4HVが保持しています．
+### motion_planning
+```motion_planning_library```<br>
+画像認識結果に基づき移動などの行動を行うクラス，関数をまとめたファイルです．各行動の関数が，HTN PlannerにおけるPrimitive Taskとして扱われます．
+### tmp
+画像認識関連のテンプレート，パラメータを格納したフォルダです．<br>
+
+```left_corner_template.jpg``` ```right_corner_template.jpg```<br>
+テンプレートマッチングに用いる左右のコーナーのテンプレートのカラー版です．<br>
+
+```left_corner_template_gray.jpg``` ```right_corner_template_gray.jpg```<br>
+テンプレートマッチングに用いる左右のコーナーのテンプレートのグレースケール版です．<br>
+
+```left_corner_template_wide_gray.jpg``` ```right_corner_template_wide_gray.jpg``` ```mtx.csv``` ```dist.csv```<br>
+テンプレートマッチングに用いる左右のコーナーのテンプレートのグレースケール版です．カメラ画角の端にあっても検出できるように，変形が施されています．<br>
+### HTN_sample
+ロボットを動かさず，HTN_plannerの動作だけ確認する際のサンプルコードです．<br>
+
+```planning_library_sample```<br>
+ロボットを動かす際の```motion_planning_library```に相当します．ロボットを動かさず，行動の流れをテキストで示します．<br>
+
+```run_HTN_planner_sample```<br>
+ロボットを動かさずにHTN_plannerを実行し，行動計画の流れを確認できます．<br>
+### sample
+画像認識やモーション再生などの動作を確認するためのサンプルファイルが格納されています．
+
+## 免責事項
+当ソフトウェアの使用中に生じたいかなる損害も株式会社アールティでは一切の責任を負いかねます。 
+
 ## ライセンス
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="クリエイティブ・コモンズ・ライセンス" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />この 作品 は <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">クリエイティブ・コモンズ 表示 4.0 国際 ライセンス</a>の下に提供されています。
+
+```Rcb4BaseLib.py```のみ[MIT License](http://opensource.org/licenses/mit-license.php)
 
 ## 作者
 TaikiTsuno
