@@ -1,6 +1,6 @@
 import time
 
-class PlanningLibrary:
+class MotionPlanningLibrarySample:
     def __init__(self):
         self.standing = False
         self.know_ball_pos = False

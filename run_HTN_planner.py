@@ -6,140 +6,88 @@ from motion_planning.motion_planning_library import MotionPlanningLibrary
 
 PLANNING = MotionPlanningLibrary() #MotionPlanningLibraryのインスタンス
 
-
-####primitive_taskで実行するアクションをそれぞれ関数化####
-def stand_up(): 
-    PLANNING.stand_up()
-
-def walk_in_field():
-    PLANNING.left_hand_approach()
-
-def turn_to_ball():
-    PLANNING.turn_to_ball()
-    
-def walk_to_ball():
-    PLANNING.walk_to_ball()
-
-def extend_arm():
-    PLANNING.touch_ball()
-    
-def walk_into_goal():
-    PLANNING.cross_goal()
-    
-def turn():
-    PLANNING.turn_to_goal()
-
-####world_state更新関数をそれぞれ作成####
-def walk_forward():
-    pass
-
-def check_know_ball_pos():
-    return PLANNING.check_know_ball_pos()
-
-def check_facing_ball():
-    return PLANNING.check_facing_ball()
-
-def check_near_ball():
-    return PLANNING.check_near_ball()
-
-def check_touched_ball():
-    return PLANNING.check_touched_ball()
-
-def check_facing_goal():
-    return PLANNING.check_facing_goal()
-
-def check_near_goal():
-    return PLANNING.check_near_goal()
-
-def check_in_goal():
-    return PLANNING.check_in_goal()
-
-def check_standing():
-    return PLANNING.check_standing()
-
 ####WorldState####
-world_state = HTN_planner.WorldState(standing = False,
-                     know_ball_pos=False,
-                     facing_ball=False,
-                     near_ball=False,
-                     touched_ball=False,
-                     facing_goal=False,
-                     near_goal=False,
-                     in_goal=False) #HTN_planner.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
-world_state.set_update_functions(standing = check_standing,
-                                 know_ball_pos = check_know_ball_pos,
-                                 facing_ball = check_facing_ball,
-                                 near_ball = check_near_ball,
-                                 touched_ball = check_touched_ball,
-                                 facing_goal = check_facing_goal,
-                                 near_goal = check_near_goal,
-                                 in_goal = check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
+world_state = HTN_planner.WorldState(WS_standing = False,
+                                     WS_know_ball_pos=False,
+                                     WS_facing_ball=False,
+                                     WS_near_ball=False,
+                                     WS_touched_ball=False,
+                                     WS_facing_goal=False,
+                                     WS_near_goal=False,
+                                     WS_in_goal=False) #HTN_planner.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
+world_state.set_update_functions(WS_standing = PLANNING.check_standing,
+                                 WS_know_ball_pos = PLANNING.check_know_ball_pos,
+                                 WS_facing_ball = PLANNING.check_facing_ball,
+                                 WS_near_ball = PLANNING.check_near_ball,
+                                 WS_touched_ball = PLANNING.check_touched_ball,
+                                 WS_facing_goal = PLANNING.check_facing_goal,
+                                 WS_near_goal = PLANNING.check_near_goal,
+                                 WS_in_goal = PLANNING.check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
 
 ####PrimitiveTasks####
-init_pos = HTN_planner.PrimitiveTask("StandUp") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-init_pos.set_precondition(standing=False, know_ball_pos=False, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
-init_pos.set_effects(standing=True) #辞書型でeffectを設定
-init_pos.set_action(stand_up) #アクションの関数を指定
+PT_init_pos = HTN_planner.PrimitiveTask("StandUp") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_init_pos.set_precondition(WS_standing=False, WS_know_ball_pos=False, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
+PT_init_pos.set_effects(WS_standing=True) #辞書型でeffectを設定
+PT_init_pos.set_action(PLANNING.stand_up) #アクションの関数を指定
 
-walk_around = HTN_planner.PrimitiveTask("WalkAround") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-walk_around.set_precondition(know_ball_pos=False, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
-walk_around.set_effects(know_ball_pos=True) #辞書型でeffectを設定
-walk_around.set_action(walk_in_field) #アクションの関数を指定
+PT_walk_around = HTN_planner.PrimitiveTask("WalkAround") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_walk_around.set_precondition(WS_know_ball_pos=False, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
+PT_walk_around.set_effects(WS_know_ball_pos=True) #辞書型でeffectを設定
+PT_walk_around.set_action(PLANNING.walk_in_field) #アクションの関数を指定
 
-face_ball = HTN_planner.PrimitiveTask("FaceBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-face_ball.set_precondition(facing_ball=False, know_ball_pos=True, in_goal=False, touched_ball=False) #辞書型でpreconditionを設定
-face_ball.set_effects(facing_ball=True) #辞書型でeffectを設定
-face_ball.set_action(turn_to_ball) #アクションの関数を指定
+PT_face_ball = HTN_planner.PrimitiveTask("FaceBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_face_ball.set_precondition(WS_facing_ball=False, WS_know_ball_pos=True, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
+PT_face_ball.set_effects(WS_facing_ball=True) #辞書型でeffectを設定
+PT_face_ball.set_action(PLANNING.turn_to_ball) #アクションの関数を指定
 
-approach_ball = HTN_planner.PrimitiveTask("ApproachBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-approach_ball.set_precondition(near_ball = False, facing_ball=True, touched_ball=False) #辞書型でpreconditionを設定
-approach_ball.set_effects(near_ball=True) #辞書型でeffectを設定
-approach_ball.set_action(walk_to_ball) #アクションの関数を指定
+PT_approach_ball = HTN_planner.PrimitiveTask("ApproachBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_approach_ball.set_precondition(WS_near_ball = False, WS_facing_ball=True, WS_touched_ball=False) #辞書型でpreconditionを設定
+PT_approach_ball.set_effects(WS_near_ball=True) #辞書型でeffectを設定
+PT_approach_ball.set_action(PLANNING.walk_to_ball) #アクションの関数を指定
 
-touch_ball = HTN_planner.PrimitiveTask("TouchBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-touch_ball.set_precondition(near_ball=True, touched_ball=False) #辞書型でpreconditionを設定
-touch_ball.set_effects(touched_ball=True) #辞書型でeffectを設定
-touch_ball.set_action(extend_arm) #アクションの関数を指定
+PT_touch_ball = HTN_planner.PrimitiveTask("TouchBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_touch_ball.set_precondition(WS_near_ball=True, WS_touched_ball=False) #辞書型でpreconditionを設定
+PT_touch_ball.set_effects(WS_touched_ball=True) #辞書型でeffectを設定
+PT_touch_ball.set_action(PLANNING.extend_arm) #アクションの関数を指定
 
-turn_to_goal = HTN_planner.PrimitiveTask("TurntoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-turn_to_goal.set_precondition(facing_goal=False, touched_ball=True) #辞書型でpreconditionを設定
-turn_to_goal.set_effects(facing_goal=True) #辞書型でeffectを設定
-turn_to_goal.set_action(turn) #アクションの関数を指定
+PT_turn_to_goal = HTN_planner.PrimitiveTask("TurntoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_turn_to_goal.set_precondition(WS_facing_goal=False, WS_touched_ball=True) #辞書型でpreconditionを設定
+PT_turn_to_goal.set_effects(WS_facing_goal=True) #辞書型でeffectを設定
+PT_turn_to_goal.set_action(PLANNING.turn) #アクションの関数を指定
 
-walk_to_goal = HTN_planner.PrimitiveTask("WalktoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-walk_to_goal.set_precondition(facing_goal=True, touched_ball=True) #辞書型でpreconditionを設定
-walk_to_goal.set_effects(near_goal=True) #辞書型でeffectを設定
-walk_to_goal.set_action(walk_in_field) #アクションの関数を指定
+PT_walk_to_goal = HTN_planner.PrimitiveTask("WalktoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_walk_to_goal.set_precondition(WS_facing_goal=True, WS_touched_ball=True) #辞書型でpreconditionを設定
+PT_walk_to_goal.set_effects(WS_near_goal=True) #辞書型でeffectを設定
+PT_walk_to_goal.set_action(PLANNING.walk_in_field) #アクションの関数を指定
 
-cross_goal = HTN_planner.PrimitiveTask("CrossGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
-cross_goal.set_precondition(near_goal=True) #辞書型でpreconditionを設定
-cross_goal.set_effects(in_goal=True) #辞書型でeffectを設定
-cross_goal.set_action(walk_into_goal) #アクションの関数を指定
+PT_cross_goal = HTN_planner.PrimitiveTask("CrossGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
+PT_cross_goal.set_precondition(WS_near_goal=True) #辞書型でpreconditionを設定
+PT_cross_goal.set_effects(WS_in_goal=True) #辞書型でeffectを設定
+PT_cross_goal.set_action(PLANNING.walk_into_goal) #アクションの関数を指定
 
 ####Method####
-find_ball = HTN_planner.Method("FindBall") #HTN_planner.Methodクラスのインスタンス生成
-find_ball.set_precondition(know_ball_pos=False, in_goal=False) #辞書型でpreconditionを渡す
-find_ball.set_subtask(init_pos, walk_around) #含まれるsubtaskをタプルで渡す
+M_find_ball = HTN_planner.Method("FindBall") #HTN_planner.Methodクラスのインスタンス生成
+M_find_ball.set_precondition(WS_know_ball_pos=False, WS_in_goal=False) #辞書型でpreconditionを渡す
+M_find_ball.set_subtask(PT_init_pos, PT_walk_around) #含まれるsubtaskをタプルで渡す
 
-go_touch_ball = HTN_planner.Method("GoTouchBall") #HTN_planner.Methodクラスのインスタンス生成
-go_touch_ball.set_precondition(know_ball_pos=True, in_goal=False) #辞書型でpreconditionを渡す
-go_touch_ball.set_subtask(face_ball, approach_ball, touch_ball) #含まれるsubtaskをタプルで渡す
+M_go_touch_ball = HTN_planner.Method("GoTouchBall") #HTN_planner.Methodクラスのインスタンス生成
+M_go_touch_ball.set_precondition(WS_know_ball_pos=True, WS_in_goal=False) #辞書型でpreconditionを渡す
+M_go_touch_ball.set_subtask(PT_face_ball, PT_approach_ball, PT_touch_ball) #含まれるsubtaskをタプルで渡す
 
-go_to_goal = HTN_planner.Method("GotoGoal") #HTN_planner.Methodクラスのインスタンス生成
-go_to_goal.set_precondition(touched_ball=True, in_goal=False) #辞書型でpreconditionを渡す
-go_to_goal.set_subtask(turn_to_goal, walk_to_goal, cross_goal) #含まれるsubtaskをタプルで渡す
+M_go_to_goal = HTN_planner.Method("GotoGoal") #HTN_planner.Methodクラスのインスタンス生成
+M_go_to_goal.set_precondition(WS_touched_ball=True, WS_in_goal=False) #辞書型でpreconditionを渡す
+M_go_to_goal.set_subtask(PT_turn_to_goal, PT_walk_to_goal, PT_cross_goal) #含まれるsubtaskをタプルで渡す
 
 ####CompoundTasks####
-root_task = HTN_planner.CompoundTask("HACStrategy") #HTN_planner.CompoundTaskクラスのインスタンス生成
-root_task.set_method(find_ball, go_touch_ball, go_to_goal) #含まれるmethodをタプルで渡す　CompoundTaskにはpreconditionは無い？
+CT_root_task = HTN_planner.CompoundTask("HACStrategy") #HTN_planner.CompoundTaskクラスのインスタンス生成
+CT_root_task.set_method(M_find_ball, M_go_touch_ball, M_go_to_goal) #含まれるmethodをタプルで渡す　CompoundTaskにはpreconditionは無い？
 
 # ########### HTNPlanner using Decomposed History ###########
 planner = HTN_planner.Planner() #Plannerのインスタンス
-world = copy.deepcopy(world_state) #world_stateクラスのコピー
 
 while True: #メインループ
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
-    world.update_state_with_sensor_data()
-    planner.make_plan([root_task], world) #root_taskについて、現在のworld_stateに基づいてプランを立てる
+    world_state.update_state_with_sensor_data()
+    planner.make_plan([CT_root_task], world_state) #CT_root_taskについて、現在のworld_stateに基づいてプランを立てる
     planner.show_plan()
-    planner.execute_plan(world) #プランを実行する
+    planner.execute_plan(world_state) #プランを実行する
