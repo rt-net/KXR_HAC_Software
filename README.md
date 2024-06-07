@@ -1,9 +1,10 @@
 # KXR_HAC_Software
-
 ![jpg](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/5ae96d94-1070-4794-992b-afbceb43f62b)
 
 近藤科学社製KXR-L2を自律化し，株式会社アールティが主催する大会 Humanoid Autonomous Challenge (HAC)に参加するためのサンプルプログラムです．
 Hierarchical Task Network（階層化型タスクネットワーク）に基づいて，周囲の環境を認識しながらロボットが次の行動を計画，実行します．<br>
+
+![png](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/9fd10c19-fb3d-4425-acf8-540438e32e46)
 
 Humanoid Autonomous Challengeについては[こちらの記事](https://www.rt-shop.jp/blog/archives/10714)を参照してください．<br>
 
@@ -15,9 +16,9 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
 - Heart to Heart 4 (v2.4.0)
 - Linux OS
     - Raspbian GNU/Linux 11 (bullseye)
-- コンソール
+- コンソールPC
     - Windows 10 Home
-    - VNC Viewer
+    - VNC Viewer 6.22.515
 - ロボット
     - KXR-L2（KXR_HAC_Hardware準拠）
 
@@ -90,7 +91,7 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ```left_corner_template_wide_gray.jpg``` ```right_corner_template_wide_gray.jpg``` ```mtx.csv``` ```dist.csv```<br>
 テンプレートマッチングに用いる左右のコーナーのテンプレートのグレースケール版です．カメラ画角の端にあっても検出できるように，変形が施されています．<br>
 ### HTN_sample
-ロボットを動かさず，HTN_plannerの動作だけ確認する際のサンプルコードです．<br>
+ロボットを動かさず，HTN_plannerの動作だけ確認する際のサンプルコードが格納されているフォルダです．<br>
 
 ```planning_library_sample```<br>
 ロボットを動かす際の```motion_planning_library```に相当します．ロボットを動かさず，行動の流れをテキストで示します．<br>
@@ -98,7 +99,7 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ```run_HTN_planner_sample```<br>
 ロボットを動かさずにHTN_plannerを実行し，行動計画の流れを確認できます．<br>
 ### sample
-画像認識やモーション再生などの動作を確認するためのサンプルファイルが格納されています．
+画像認識やモーション再生などの動作を確認するためのサンプルファイルが格納されているフォルダです．
 
 ## 実行方法
 1. ロボット，RaspberryPiを起動し．フィールドにロボットを配置する．
