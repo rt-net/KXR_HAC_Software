@@ -85,6 +85,8 @@ CT_root_task.set_method(M_find_ball, M_go_touch_ball, M_go_to_goal) #含まれ�
 # ########### HTNPlanner using Decomposed History ###########
 planner = HTN_planner.Planner() #Plannerのインスタンス
 
+
+a = copy.deepcopy(world_state)
 while True: #メインループ
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
     world_state.update_state_with_sensor_data()
