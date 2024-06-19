@@ -26,10 +26,9 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         self.facing_goal = False
         self.is_standing = False
         
-        print("[行動計画の初期化成功]")
+        print("[Motion planning initialized successfully]")
 
     ########## データ取得関数 ##########
- 
     def get_vision_all(self):
         """collect all vision data
         """
@@ -48,7 +47,6 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         print(self.MOTION.get_body_angle())
         
     ########## 各種位置関係の幾何的計算関数 ##########
-     
     def update_distance_to_ball(self):
         """update distance to ball
         """

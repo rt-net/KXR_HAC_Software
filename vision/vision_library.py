@@ -26,24 +26,23 @@ def load_calibration_file(mtx_path, dist_path): #キャリブレーションパ�
 
 class VisionLibrary:
     def __init__(self):             
-        print("[カメラ初期化中]")
-            
+        print("[Initializing camera...]")
         self.cap = cv2.VideoCapture(0) #デバイス番号を0で指定しインスタンス生成
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) #カメラ画像取得の際のバッファを設定
         print(type(self.cap)) #カメラ画像の取得元クラス表示
-        print("カメラ設定正常: ", self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
+        print("Camera setting OK: ", self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
 
         # フォーマット・解像度・FPSの設定
-        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y','U','Y','V')) #フォーマット指定
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, parameterfile.CAMERA_FRAME_WIDTH) #幅指定
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, parameterfile.CAMERA_FRAME_HEIGHT) #高さ指定
-        self.cap.set(cv2.CAP_PROP_FPS, parameterfile.CAMERA_FPS) #FPS指定
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y','U','Y','V')) #フォーマット指定　使用するカメラに合わせる
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, parameterfile.CAMERA_FRAME_WIDTH) #幅指定　使用するカメラに合わせる
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, parameterfile.CAMERA_FRAME_HEIGHT) #高さ指定　使用するカメラに合わせる
+        self.cap.set(cv2.CAP_PROP_FPS, parameterfile.CAMERA_FPS) #FPS指定　高いと処理が間に合わないため，低めに設定
 
         # フォーマット・解像度・FPSの取得
         fourcc = decode_fourcc(self.cap.get(cv2.CAP_PROP_FOURCC)) #動画コーデックをデコードしたものを取得
-        width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) #幅を取得
-        height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) #高さを取得
-        fps = self.cap.get(cv2.CAP_PROP_FPS) #FPSを取得
+        width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) #設定された幅を取得
+        height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) #設定された高さを取得
+        fps = self.cap.get(cv2.CAP_PROP_FPS) #設定されたFPSを取得
         print("fourcc:{} fps:{} width:{} height:{}".format(fourcc, fps, width, height)) #取得したフォーマット、解像度、FPSを表示
         
         #歪み補正パラメータが配置されたディレクトリパス指定
@@ -51,7 +50,7 @@ class VisionLibrary:
         self.MTX_PATH = TMP_FOLDER_PATH + "mtx.csv" 
         self.DIST_PATH = TMP_FOLDER_PATH + "dist.csv"
         
-        print("[カメラ初期化完了]")
+        print("[Camera initialized successfully]")
         
         #各要素の検出状態の初期化
         self.is_found_edge = False #フィールドのエッジが見えているかどうかのT/F
@@ -71,11 +70,11 @@ class VisionLibrary:
                                 (0,parameterfile.BEV_FRAME_HEIGHT_MM),
                                 (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)]) #上記、鳥瞰図変換のパラメータ取得に用いた長方形の大きさ
         BEV_transform_parameter = cv2.getPerspectiveTransform(lane_shape, img_shape) #鳥瞰図変換用のパラメータを得る
-        self.BEV = cv2.warpPerspective(frame_undistort, 
+        self.BEV_img = cv2.warpPerspective(frame_undistort, 
                                        BEV_transform_parameter, 
                                        (parameterfile.BEV_FRAME_WIDTH_MM, parameterfile.BEV_FRAME_HEIGHT_MM)) #実際の寸法(mm)に合わせて鳥瞰図変換pixel=mm
         
-        return self.BEV #歪み補正、鳥瞰図変換後の画像を返す
+        return self.BEV_img #歪み補正、鳥瞰図変換後の画像を返す
        
     def detect_ball(self): #ボール検出の関数
         frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
@@ -86,7 +85,7 @@ class VisionLibrary:
         
         #もしボール画素数が存在判定の閾値を超えていたら
         if ball_pixel_area > parameterfile.BALL_PIXEL_AREA_THRESHOLD:
-            self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]) , int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
+            self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y = int(ball_center_of_gravity["m10"]/ball_center_of_gravity["m00"]), int(ball_center_of_gravity["m01"]/ball_center_of_gravity["m00"]) #ボールの重心座標を得る
         else:
             self.ball_pixel_coordinate_x = 0
             self.ball_pixel_coordinate_y = 0

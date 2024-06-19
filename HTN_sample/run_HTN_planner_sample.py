@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #�
 import HTN_planner
 from planning_library_sample import MotionPlanningLibrarySample
 
-PLANNING = MotionPlanningLibrarySample() #MotionPlanningLibraryのインスタンス
+PLANNING = MotionPlanningLibrarySample() #MotionPlanningLibraryのインスタンス作成
 
 ####WorldState####
 world_state = HTN_planner.WorldState(WS_standing=False,
@@ -26,13 +26,13 @@ world_state.set_update_functions(WS_standing = PLANNING.check_standing,
                                  WS_touched_ball = PLANNING.check_touched_ball,
                                  WS_facing_goal = PLANNING.check_facing_goal,
                                  WS_near_goal = PLANNING.check_near_goal,
-                                 WS_in_goal = PLANNING.check_in_goal) #それぞれのworld_stateについて、更新用の関数をセットする
+                                 WS_in_goal = PLANNING.check_in_goal) #それぞれのworld_stateについて、MotionPlanningLibrarySampleクラスに用意された更新用の関数をセットする
 
 ####PrimitiveTasks####
 PT_init_pos = HTN_planner.PrimitiveTask("InitPos") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_init_pos.set_precondition(WS_standing=False, WS_know_ball_pos=False, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
 PT_init_pos.set_effects(WS_standing=True) #辞書型でeffectを設定
-PT_init_pos.set_action(PLANNING.stand_up) #アクションの関数を指定
+PT_init_pos.set_action(PLANNING.stand_up) #アクションの関数を指定　MotionPlanningLibrarySampleクラスにアクションの関数も用意されている
 
 PT_walk_around = HTN_planner.PrimitiveTask("WalkAround") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_walk_around.set_precondition(WS_know_ball_pos=False, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
@@ -84,10 +84,10 @@ M_go_to_goal.set_subtask(PT_turn_to_goal, PT_walk_to_goal, PT_cross_goal) #含�
 
 ####CompoundTasks####
 CT_root_task = HTN_planner.CompoundTask("HACStrategy") #HTN_planner.CompoundTaskクラスのインスタンス生成
-CT_root_task.set_method(M_find_ball, M_go_touch_ball, M_go_to_goal) #含まれるmethodをタプルで渡す　CompoundTaskにはpreconditionは無い？
+CT_root_task.set_method(M_find_ball, M_go_touch_ball, M_go_to_goal) #含まれるmethodをタプルで渡す
 
 ############ HTNPlanner using Decomposed History ###########
-planner = HTN_planner.Planner() #Plannerのインスタンス
+planner = HTN_planner.Planner() #Plannerのインスタンス生成
 
 while True:
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
