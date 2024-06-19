@@ -379,10 +379,10 @@ class VisionLibrary:
         for contour in contours:
             # Get bounding rectangle coordinates for the contour
             x, y, w, h = cv2.boundingRect(contour)
-            print("rect ID:", count, "width:", w, "height", h)
+            # print("rect ID:", count, "width:", w, "height", h)
             if w > 200 and w/h >= 2:
                 goal_line = True
-                print(goal_line)
+                # print(goal_line)
                 break
             cv2.rectangle(self.goal, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Draw rectangle with green color
             count +=1

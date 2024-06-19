@@ -26,7 +26,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         self.facing_goal = False
         self.is_standing = False
         
-        print("[Motion planning initialized successfully]")
+        print("\n[Motion planning initialized successfully]")
 
     ########## データ取得関数 ##########
     def get_vision_all(self):

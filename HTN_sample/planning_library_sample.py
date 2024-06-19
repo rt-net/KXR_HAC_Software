@@ -22,6 +22,7 @@ class MotionPlanningLibrarySample:
     def walk_in_field(self):
         print("------WALK AROUND------")
         self.know_ball_pos = random.choice([True, False])
+        self.near_goal = random.choice([True, False])
         time.sleep(1)
 
     def turn_to_ball(self):
