@@ -14,7 +14,7 @@ import parameterfile
 
 class MotionLibrary:   
     def __init__(self): 
-        print("\n[Initializing RCB-4]")
+        print("\n[Initializing RCB-4...]")
         # sys.path.append('../Rcb4Lib') #Rcb4Libの検索パスを追加
         self.rcb4 = Rcb4BaseLib() #rcb4をインスタンス(定義)
         self.rcb4.open('/dev/ttyUSB0',115200,1.3) #RCB4とのシリアル通信ポートをオープン

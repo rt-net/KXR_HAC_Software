@@ -5,10 +5,10 @@ import os
 
 import numpy as np
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #一つ上のディレクトリへの検索パスの追加
+
 from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #一つ上のディレクトリへの検索パスの追加
 import parameterfile
 
 class MotionPlanningLibrary: #MotionPlanningLibraryクラス

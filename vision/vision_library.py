@@ -46,9 +46,8 @@ class VisionLibrary:
         print("     fourcc:{} fps:{} width:{} height:{}".format(fourcc, fps, width, height)) #取得したフォーマット、解像度、FPSを表示
         
         #歪み補正パラメータが配置されたディレクトリパス指定
-        TMP_FOLDER_PATH = "../tmp/" 
-        self.MTX_PATH = TMP_FOLDER_PATH + "mtx.csv" 
-        self.DIST_PATH = TMP_FOLDER_PATH + "dist.csv"
+        self.MTX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tmp', "mtx.csv")
+        self.DIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tmp', "dist.csv")
         
         print("[Camera initialized successfully]")
         
@@ -56,6 +55,8 @@ class VisionLibrary:
         self.is_found_edge = False #フィールドのエッジが見えているかどうかのT/F
         self.is_found_ball = False #ボールが見えているかどうかのT/F
         self.corner_type = "NONE" #見えているコーナーの種類（最初はNONE）
+        self.corner_pixel_coordinate_x = 0
+        self.corner_pixel_coordinate_y = 0
         
     def calibrate_img(self):      
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
@@ -174,7 +175,7 @@ class VisionLibrary:
         else:
             self.corner_type = "NONE"
             
-        return self.corner_type #コーナー座標、種別を返す
+        return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
         
     def display_resultimg(self):#結果画像の表示用関数
         ret, result = self.cap.read()
