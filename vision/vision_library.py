@@ -29,8 +29,8 @@ class VisionLibrary:
         print("[Initializing camera...]")
         self.cap = cv2.VideoCapture(0) #デバイス番号を0で指定しインスタンス生成
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) #カメラ画像取得の際のバッファを設定
-        print(type(self.cap)) #カメラ画像の取得元クラス表示
-        print("Camera setting OK: ", self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
+        print("     ", type(self.cap)) #カメラ画像の取得元クラス表示
+        print("     Camera setting OK: ", self.cap.isOpened()) #カメラ画像が読み込まれているか表示(Trueが正常)
 
         # フォーマット・解像度・FPSの設定
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y','U','Y','V')) #フォーマット指定　使用するカメラに合わせる
@@ -43,10 +43,10 @@ class VisionLibrary:
         width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) #設定された幅を取得
         height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) #設定された高さを取得
         fps = self.cap.get(cv2.CAP_PROP_FPS) #設定されたFPSを取得
-        print("fourcc:{} fps:{} width:{} height:{}".format(fourcc, fps, width, height)) #取得したフォーマット、解像度、FPSを表示
+        print("     fourcc:{} fps:{} width:{} height:{}".format(fourcc, fps, width, height)) #取得したフォーマット、解像度、FPSを表示
         
         #歪み補正パラメータが配置されたディレクトリパス指定
-        TMP_FOLDER_PATH = "./tmp/" 
+        TMP_FOLDER_PATH = "../tmp/" 
         self.MTX_PATH = TMP_FOLDER_PATH + "mtx.csv" 
         self.DIST_PATH = TMP_FOLDER_PATH + "dist.csv"
         
@@ -77,7 +77,7 @@ class VisionLibrary:
         return self.BEV_img #歪み補正、鳥瞰図変換後の画像を返す
        
     def detect_ball(self): #ボール検出の関数
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み         
+        frame = self.BEV_img #キャリブレーション後画像の読み込み         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
         ball_pixel_area = cv2.countNonZero(frame_mask) #ボールのマスクの画素数を取得
@@ -118,7 +118,7 @@ class VisionLibrary:
         return self.ball_pixel_coordinate_x_wide, self.ball_pixel_coordinate_y_wide #カメラ画像中のボールのx,y座標を返す    
 
     def detect_corner(self): #コーナー検出の関数
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
+        frame = self.BEV_img #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
         frame_mask_high = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_HIGH, parameterfile.FIELD_COLOR_MAX_HIGH)   #エッジ赤線をマスク
@@ -269,7 +269,7 @@ class VisionLibrary:
         return result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み
+        frame = self.BEV_img #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
@@ -347,7 +347,7 @@ class VisionLibrary:
         return self.angle, self.slope, self.intercept #エッジ角度、エッジ切片を返す
     
     def detect_goal(self):
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
+        frame = self.BEV_img #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_MIN, parameterfile.GOAL_COLOR_MAX)   #エッジ赤線をマスク
         self.goal = frame_mask
@@ -453,7 +453,7 @@ class VisionLibrary:
         return self.goalline_angle, self.goalline_slope, self.goalline_intercept #エッジ角度、エッジ切片を返す
     
     def detect_ball_line(self):
-        frame = self.calibrate_img() #キャリブレーション後画像の読み込み        
+        frame = self.BEV_img #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.BALL_LINE_COLOR_MIN, parameterfile.BALL_LINE_COLOR_MAX)   #エッジ赤線をマスク
         

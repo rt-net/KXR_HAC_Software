@@ -14,17 +14,17 @@ import parameterfile
 
 class MotionLibrary:   
     def __init__(self): 
-        print("\n[RCB4初期化中]")
-        sys.path.append('../Rcb4Lib') #Rcb4Libの検索パスを追加
+        print("\n[Initializing RCB-4]")
+        # sys.path.append('../Rcb4Lib') #Rcb4Libの検索パスを追加
         self.rcb4 = Rcb4BaseLib() #rcb4をインスタンス(定義)
         self.rcb4.open('/dev/ttyUSB0',115200,1.3) #RCB4とのシリアル通信ポートをオープン
         
         if self.rcb4.checkAcknowledge() == True: #通信が返ってきたとき
-            print("RCB-4 Open")
-            print("[RCB4初期化完了]")
+            print("     RCB-4 Open")
+            print("[RCB-4 initialized successfully]")
         else:
-            print("RCB-4 Error")
-            print("[RCB4初期化失敗]")
+            print("     RCB-4 Error")
+            print("[RCB-4 initialization failed]")
             #raise ModuleNotFoundError("RCB4初期化失敗")
             #RCB4が接続されていないときにエラーを返したい場合は上のコメントアウトを外す
         

@@ -33,7 +33,7 @@ PT_init_pos.set_action(PLANNING.stand_up) #アクションの関数を指定
 PT_walk_around = HTN_planner.PrimitiveTask("WalkAround") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_walk_around.set_precondition(WS_know_ball_pos=False, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
 PT_walk_around.set_effects(WS_know_ball_pos=True) #辞書型でeffectを設定
-PT_walk_around.set_action(PLANNING.walk_in_field) #アクションの関数を指定
+PT_walk_around.set_action(PLANNING.left_hand_approach) #アクションの関数を指定
 
 PT_face_ball = HTN_planner.PrimitiveTask("FaceBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_face_ball.set_precondition(WS_facing_ball=False, WS_know_ball_pos=True, WS_in_goal=False, WS_touched_ball=False) #辞書型でpreconditionを設定
@@ -48,22 +48,22 @@ PT_approach_ball.set_action(PLANNING.walk_to_ball) #アクションの関数を�
 PT_touch_ball = HTN_planner.PrimitiveTask("TouchBall") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_touch_ball.set_precondition(WS_near_ball=True, WS_touched_ball=False) #辞書型でpreconditionを設定
 PT_touch_ball.set_effects(WS_touched_ball=True) #辞書型でeffectを設定
-PT_touch_ball.set_action(PLANNING.extend_arm) #アクションの関数を指定
+PT_touch_ball.set_action(PLANNING.touch_ball) #アクションの関数を指定
 
 PT_turn_to_goal = HTN_planner.PrimitiveTask("TurntoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_turn_to_goal.set_precondition(WS_facing_goal=False, WS_touched_ball=True) #辞書型でpreconditionを設定
 PT_turn_to_goal.set_effects(WS_facing_goal=True) #辞書型でeffectを設定
-PT_turn_to_goal.set_action(PLANNING.turn) #アクションの関数を指定
+PT_turn_to_goal.set_action(PLANNING.turn_to_goal) #アクションの関数を指定
 
 PT_walk_to_goal = HTN_planner.PrimitiveTask("WalktoGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_walk_to_goal.set_precondition(WS_facing_goal=True, WS_touched_ball=True) #辞書型でpreconditionを設定
 PT_walk_to_goal.set_effects(WS_near_goal=True) #辞書型でeffectを設定
-PT_walk_to_goal.set_action(PLANNING.walk_in_field) #アクションの関数を指定
+PT_walk_to_goal.set_action(PLANNING.left_hand_approach) #アクションの関数を指定
 
 PT_cross_goal = HTN_planner.PrimitiveTask("CrossGoal") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
 PT_cross_goal.set_precondition(WS_near_goal=True) #辞書型でpreconditionを設定
 PT_cross_goal.set_effects(WS_in_goal=True) #辞書型でeffectを設定
-PT_cross_goal.set_action(PLANNING.walk_into_goal) #アクションの関数を指定
+PT_cross_goal.set_action(PLANNING.cross_goal) #アクションの関数を指定
 
 ####Method####
 M_find_ball = HTN_planner.Method("FindBall") #HTN_planner.Methodクラスのインスタンス生成
