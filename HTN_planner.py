@@ -24,7 +24,6 @@ class WorldState:
             print("WorldState: updating", state_name, ":", self.state[state_name])
         # print(self.state)
         
-
     def check_if_state_changed(self): #stateが変わったか確認する
         old_state = copy.deepcopy(self.state) #old_stateは呼び出し時のstate
         self.update_state_with_sensor_data() #センサーデータによってstateを更新
