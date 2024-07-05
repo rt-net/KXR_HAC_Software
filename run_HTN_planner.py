@@ -15,14 +15,32 @@ world_state = HTN_planner.WorldState(WS_standing=False,
                                      WS_facing_goal=False,
                                      WS_near_goal=False,
                                      WS_in_goal=False) #HTN_planner.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
-world_state.set_update_functions(WS_standing=PLANNING.check_standing,
-                                 WS_know_ball_pos=PLANNING.check_know_ball_pos,
-                                 WS_facing_ball=PLANNING.check_facing_ball,
-                                 WS_near_ball=PLANNING.check_near_ball,
-                                 WS_touched_ball=PLANNING.check_touched_ball,
-                                 WS_facing_goal=PLANNING.check_facing_goal,
-                                 WS_near_goal=PLANNING.check_near_goal,
-                                 WS_in_goal=PLANNING.check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
+
+def check_standing():
+    return PLANNING.check_standing()
+def check_know_ball_pos():
+    return PLANNING.check_know_ball_pos()
+def check_facing_ball():
+    return PLANNING.check_facing_ball()
+def check_near_ball():
+    return PLANNING.check_near_ball()
+def check_touched_ball():
+    return PLANNING.check_touched_ball()
+def check_facing_goal():
+    return PLANNING.check_facing_goal()
+def check_near_goal():
+    return PLANNING.check_near_goal()
+def check_in_goal():
+    return PLANNING.check_in_goal()
+
+world_state.set_update_functions(WS_standing=check_standing,
+                                 WS_know_ball_pos=check_know_ball_pos,
+                                 WS_facing_ball=check_facing_ball,
+                                 WS_near_ball=check_near_ball,
+                                 WS_touched_ball=check_touched_ball,
+                                 WS_facing_goal=check_facing_goal,
+                                 WS_near_goal=check_near_goal,
+                                 WS_in_goal=check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
 
 ####PrimitiveTasks####
 PT_init_pos = HTN_planner.PrimitiveTask("StandUp") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
