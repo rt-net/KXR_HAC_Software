@@ -18,13 +18,11 @@ class WorldState:
             self.state[name] = effect #stateをnew_stateに基づいてアップデート
     
     def update_state_with_sensor_data(self): 
-        #print("Updating World State")
+        print("\n"+"CURRENT WORLD STATE")
         for state_name, update_function in self.state_check_list.items():  #state_check_listのそれぞれの内容に従いセンサーデータからstateを更新
             self.state[state_name] = update_function()
-            print("WorldState: updating", state_name, ":", self.state[state_name])
-        # print(self.state)
+            print("      ", state_name, ":", self.state[state_name])
         
-
     def check_if_state_changed(self): #stateが変わったか確認する
         old_state = copy.deepcopy(self.state) #old_stateは呼び出し時のstate
         self.update_state_with_sensor_data() #センサーデータによってstateを更新
@@ -79,18 +77,17 @@ class PrimitiveTask:
     def monitor_task_status(self, world):
         world.update_state_with_sensor_data()
         if set(self.effects.items()).issubset(world.state.items()): 
-            print("COMPLETE")
+            print("---TASK COMPLETE")
             return PrimitiveTask.STATUS_COMPLETE
         elif set(self.preconditions.items()).issubset(world.state.items()):
-            print("ACTIVE")
+            print("---TASK ACTIVE")
             return PrimitiveTask.STATUS_ACTIVE
         else:
-            print("FAILED")
+            print("---TASK FAILED")
             return PrimitiveTask.STATUS_FAILED
         
     def run_action(self, world):
         self.status = PrimitiveTask.STATUS_ACTIVE
-        print("in action----", self.action)
         while self.status == PrimitiveTask.STATUS_ACTIVE:
             self.action()
             self.status = self.monitor_task_status(world)
@@ -124,9 +121,8 @@ class FinalPlan:
         self.tasks.append(task) #tasksのリストに引数となっているタスクを付け足す
 
     def run(self, world):
-        #print(self.tasks)
         for task in self.tasks: #taskはクラスとして存在する　class.PrimitiveTaskの別々のインスタンス
-            print("\n実行中のタスク: ", task.name)
+            print("\nONGOING TASK : ", task.name)
             task.run_action(world)
             if task.status == PrimitiveTask.STATUS_FAILED:
                 break
@@ -140,14 +136,12 @@ class Planner:
 
     def check_task_precond(self, task): #渡されたタスクのpreconditionを確認
         for precondition in task.preconditions.items(): #渡されたタスクのpreconditionの要素について　items()は辞書オブジェクトのキーと値をforループさせるためのメソッド
-            # print(precondition)
-            # print(self.working_state.state.items())
             if precondition not in self.working_state.state.items(): #working_stateの中にそのタスクのpreconditionが無かったら
                 return False #Falseを返す
         return True #ここまでのループでFalseが返らなかったら（working_stateとpreconditionが合致していたら）Trueを返す
 
     def make_plan(self, tasks_to_process, world):#, DecomHis): 渡されたタスクと現在のworld_stateについてプランを作成
-        print ("*"*10+"CREATING A PLAN"+"*"*10) #プラン生成
+        print ("\n"+"*"*10+"CREATING A PLAN"+"*"*10) #プラン生成
         self.f_plan.reset() #最終プランの初期化
         self.his.reset() #計画履歴の初期化
         self.working_state = copy.deepcopy(world) #引数worldからコピーした作業状態をインスタンス変数self.working_stateにする　プランニング作業中に引数のもとが更新されても基の値を保持
@@ -155,16 +149,13 @@ class Planner:
         while tasks_to_process: #tasks_to_processが存在する間
             current_task = tasks_to_process.pop(0) #tasks_to_processの先頭の値を削除して、それをcurrent_taskに代入 pop(0)はリストの先頭を削除して持ってくる
             if current_task.__class__.__name__ == 'CompoundTask': #__class__.__name__プロパティ属性はクラスの名前を持ってくる　これがもしCompundTaskであれば
-                print("current compound task name", current_task.name)
                 for method in current_task.method_list: #現在のタスクにおけるメソッドのリストについて繰り返す
                     if self.check_task_precond(method): #そのメソッドについてpreconditionを確認 Trueが返ってきたら（working_stateと合致していたら）
-                        print("current method name", method.name)
                         self.his.record(current_task, self.f_plan) #現在のタスクをプランに記録 PlanningHistoryクラスを用いる
                         tasks_to_process = list(method.subtasks) + tasks_to_process #実行するタスクにメソッドのsubtaskを追加
                     elif self.use_history: #それ以外の場合（use_historyは常にTrue）
                         tasks_to_process = tasks_to_process + self.his.restore_task() #tasks_to_processはそのまま
             elif current_task.__class__.__name__ == 'PrimitiveTask': #もしPrimitiveTaskであれば
-                print("current primitive task name", current_task.name)
                 if self.check_task_precond(current_task): #現在のタスクのpreconditionを確認
                     self.working_state.update_state_for_planner(current_task.effects) #world_stateをコピーしたものであるworking_stateを実行したtaskのeffectにより更新
                     self.f_plan.add(current_task) #現在のタスクをプランに追加
@@ -175,9 +166,9 @@ class Planner:
 
     def show_plan(self):
         #print(self.f_plan.tasks)
-        print("-"*10+"Plan Start"+"-"*10)
+        print("\n"+"-"*10+"Plan Start"+"-"*10)
         for task in self.f_plan.tasks:
-            print(task.name)
+            print(" "*10+task.name)
         print("-"*10+"Plan Finish"+"-"*10)
 
     def execute_plan(self, world):

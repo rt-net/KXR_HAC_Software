@@ -1,10 +1,10 @@
 # KXR_HAC_Software
-![jpg](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/5ae96d94-1070-4794-992b-afbceb43f62b)
+![jpg](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/5ae96d94-1070-4794-992b-afbceb43f62b "KXR-HAC")
 
 近藤科学社製KXR-L2を自律化し，株式会社アールティが主催する大会 Humanoid Autonomous Challenge (HAC)に参加するためのサンプルプログラムです．
 Hierarchical Task Network（階層化型タスクネットワーク）に基づいて，周囲の環境を認識しながらロボットが次の行動を計画，実行します．<br>
 
-![png](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/9fd10c19-fb3d-4425-acf8-540438e32e46)
+![png](https://github.com/rt-net/KXR_HAC_Software/assets/103564180/9fd10c19-fb3d-4425-acf8-540438e32e46 "HTN Planner")
 
 Humanoid Autonomous Challengeについては[こちらの記事](https://www.rt-shop.jp/blog/archives/10714)を参照してください．<br>
 

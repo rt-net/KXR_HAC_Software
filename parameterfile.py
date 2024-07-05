@@ -3,6 +3,7 @@ import cv2
 
 import pprint
 import sys
+import os
 
 #Motion Planning Parameters###################################
 FOOT_CENTER_TO_BEV_FRAME_BOTTOM_DISTANCE = 90
@@ -110,19 +111,27 @@ BLUR_FILTER_SIZE_GOAL = 9
 
 CORNER_TEMPLATE_HEIGHT, CORNER_TEMPLATE_WIDTH = 66,66 #コーナー部のサイズ(mm)
 BINARIZATION_THRESHOLD = 30
-#コーナーのテンプレートマッチ元画像の読み込み
 
-left_corner_template = cv2.imread("../tmp/left_corner_template_gray.jpg")
+#コーナーのテンプレートマッチ元画像の読み込み
+left_corner_template = cv2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp", "left_corner_template.jpg"))
+left_corner_template = cv2.resize(left_corner_template, (CORNER_TEMPLATE_HEIGHT, CORNER_TEMPLATE_WIDTH))
+left_corner_template = cv2.cvtColor(left_corner_template, cv2.COLOR_BGR2GRAY)
 ret, LEFT_CORNER_TEMPLATE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-right_corner_template = cv2.imread("../tmp/right_corner_template_gray.jpg")
+right_corner_template = cv2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp", "right_corner_template.jpg"))
+right_corner_template = cv2.resize(right_corner_template, (CORNER_TEMPLATE_HEIGHT, CORNER_TEMPLATE_WIDTH))
+right_corner_template = cv2.cvtColor(right_corner_template, cv2.COLOR_BGR2GRAY)
 ret, RIGHT_CORNER_TEMPLATE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-left_corner_template = cv2.imread("../tmp/left_corner_template_wide_gray.jpg")
-ret, LEFT_CORNER_TEMPLATE_WIDE = cv2.threshold(left_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
+left_corner_template_wide = cv2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp", "left_corner_template.jpg"))
+left_corner_template_wide = cv2.resize(left_corner_template_wide, (30, 20))
+left_corner_template_wide = cv2.cvtColor(left_corner_template_wide, cv2.COLOR_BGR2GRAY)
+ret, LEFT_CORNER_TEMPLATE_WIDE = cv2.threshold(left_corner_template_wide, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
-right_corner_template = cv2.imread("../tmp/right_corner_template_wide_gray.jpg")
-ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
+right_corner_template_wide = cv2.imread(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp", "right_corner_template.jpg"))
+right_corner_template_wide = cv2.resize(right_corner_template_wide, (30, 20))
+right_corner_template_wide = cv2.cvtColor(right_corner_template_wide, cv2.COLOR_BGR2GRAY)
+ret, RIGHT_CORNER_TEMPLATE_WIDE = cv2.threshold(right_corner_template_wide, BINARIZATION_THRESHOLD, 255, cv2.THRESH_BINARY)
 
 TEMPLATE_MATCH_THRESHOLD = 0.7#0.85 #パターンマッチの閾値
 TEMPLATE_MATCH_THRESHOLD_WIDE = 0.7#0.85 #パターンマッチの閾値

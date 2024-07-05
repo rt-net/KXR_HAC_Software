@@ -5,10 +5,10 @@ import os
 
 import numpy as np
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #一つ上のディレクトリへの検索パスの追加
+
 from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) #一つ上のディレクトリへの検索パスの追加
 import parameterfile
 
 class MotionPlanningLibrary: #MotionPlanningLibraryクラス
@@ -26,10 +26,9 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         self.facing_goal = False
         self.is_standing = False
         
-        print("[行動計画の初期化成功]")
+        print("\n[Motion planning initialized successfully]")
 
     ########## データ取得関数 ##########
- 
     def get_vision_all(self):
         """collect all vision data
         """
@@ -45,10 +44,9 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
     def get_angle_to_goal(self):
         """get robot's angle towards goal using IMU
         """
-        print(self.MOTION.get_body_angle())
+        print("[Robot body angle : ", self.MOTION.get_body_angle(), "]")
         
     ########## 各種位置関係の幾何的計算関数 ##########
-     
     def update_distance_to_ball(self):
         """update distance to ball
         """
@@ -110,19 +108,19 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         
         #cornertypeは文字型　認識結果の文字列の内容によって分岐　右手法（右のエッジに常に沿って移動）がベースになっていることに注意
         if self.cornertype == "NONE": #コーナーが無いとき
-            print("NONE") 
+            print("\n[No corner found]\n") 
         elif self.cornertype == "RIGHT": #右向きのコーナーがあるとき
-            print("RIGHT")
+            print("\n[Right corner]\n")
             self.MOTION.walk_sideway(-100) #エッジから100mm離れる
             self.MOTION.walk_forward_timed(500) #500mm前進
             self.MOTION.turn(90) #90°右旋回
             #以上のシーケンスでコーナーを右に曲がる
         elif self.cornertype == "LEFT": #左向きのコーナーがあるとき
-            print("LEFT")
+            print("\n[Left corner]\n")
             self.MOTION.turn(-90) #90°左旋回
             #以上のシーケンスでコーナーを左に曲がる
         elif self.cornertype == "RIGHT_WIDE":
-            print("RIGHT_WIDE")
+            print("\n[Right corner]\n")
             while True: 
                 self.get_vision_all()
                 if self.edge_angle != 0:
@@ -141,7 +139,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
                     break
             self.MOTION.turn(90)
         elif self.cornertype == "LEFT_WIDE":
-            print("LEFT_WIDE")
+            print("\n[Left corner]\n")
             self.MOTION.turn(-90)
                     
     ########## Primitive Tasks ##########
@@ -175,8 +173,6 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
                            
         if self.cornertype != "NONE": #コーナーが存在するとき
             self.MOTION.stop_motion() #再生中のモーションを停止
-            print("ROUND CORNER") 
-            print(self.cornertype) 
             self.round_corner() #コーナーを曲がる
 
     def turn_to_ball(self): #ボールに正対する
@@ -202,7 +198,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
     def turn_to_goal(self): #ゴールラインに正対する
         self.MOTION.stop_motion() #再生中のモーションを停止
         yaw, pitch, roll = self.MOTION.get_body_angle() #現在のロボット自身の絶対角度を取得（探索開始時の角度を基準とする）
-        print(180-yaw) 
+        print("[Angle to the goal : ", 180-yaw, "]") 
         self.MOTION.turn(360-yaw) #ゴールラインに正対するように旋回
         self.facing_goal=True #ゴールに向いているかどうかのT/Fを更新
     
@@ -212,8 +208,8 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         
         if self.goalline_angle != 0 and self.goalline_intercept != 0: #ゴールの目の前にいるとき
             self.calculate_distance_from_the_edge_mm(self.goalline_slope, self.goalline_intercept) #ゴールラインとの距離を計算
-            print("angle", self.goalline_angle)
-            print(self.distance_from_the_edge_mm)
+            print("[Angle to the goal line : ", self.goalline_angle, "]")
+            print("[Distance to the goal line : ", self.distance_from_the_edge_mm, "]")
             
             #ゴールに正対するように旋回
             if self.goalline_angle > 0:
@@ -241,7 +237,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             if count > 2:
                 break
             
-        print("GOAL")
+        print("#"*10+"GOAL"+"#"*10)
         self.in_goal = True #ゴールに入っているかどうかのT/Fを更新
         
     ########## World State更新関連の関数 ##########
