@@ -44,7 +44,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
     def get_angle_to_goal(self):
         """get robot's angle towards goal using IMU
         """
-        print(self.MOTION.get_body_angle())
+        print("[Robot body angle : ", self.MOTION.get_body_angle(), "]")
         
     ########## 各種位置関係の幾何的計算関数 ##########
     def update_distance_to_ball(self):
