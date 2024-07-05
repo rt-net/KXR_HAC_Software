@@ -7,7 +7,7 @@ from motion_planning.motion_planning_library import MotionPlanningLibrary
 PLANNING = MotionPlanningLibrary() #MotionPlanningLibraryのインスタンス
 
 ####WorldState####
-world_state = HTN_planner.WorldState(WS_standing = False,
+world_state = HTN_planner.WorldState(WS_standing=False,
                                      WS_know_ball_pos=False,
                                      WS_facing_ball=False,
                                      WS_near_ball=False,
@@ -15,14 +15,14 @@ world_state = HTN_planner.WorldState(WS_standing = False,
                                      WS_facing_goal=False,
                                      WS_near_goal=False,
                                      WS_in_goal=False) #HTN_planner.WorldStateクラスのインスタンス　初期値には全てFalseが入っている
-world_state.set_update_functions(WS_standing = PLANNING.check_standing,
-                                 WS_know_ball_pos = PLANNING.check_know_ball_pos,
-                                 WS_facing_ball = PLANNING.check_facing_ball,
-                                 WS_near_ball = PLANNING.check_near_ball,
-                                 WS_touched_ball = PLANNING.check_touched_ball,
-                                 WS_facing_goal = PLANNING.check_facing_goal,
-                                 WS_near_goal = PLANNING.check_near_goal,
-                                 WS_in_goal = PLANNING.check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
+world_state.set_update_functions(WS_standing=PLANNING.check_standing,
+                                 WS_know_ball_pos=PLANNING.check_know_ball_pos,
+                                 WS_facing_ball=PLANNING.check_facing_ball,
+                                 WS_near_ball=PLANNING.check_near_ball,
+                                 WS_touched_ball=PLANNING.check_touched_ball,
+                                 WS_facing_goal=PLANNING.check_facing_goal,
+                                 WS_near_goal=PLANNING.check_near_goal,
+                                 WS_in_goal=PLANNING.check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
 
 ####PrimitiveTasks####
 PT_init_pos = HTN_planner.PrimitiveTask("StandUp") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
@@ -85,8 +85,7 @@ CT_root_task.set_method(M_find_ball, M_go_touch_ball, M_go_to_goal) #含まれ�
 # ########### HTNPlanner using Decomposed History ###########
 planner = HTN_planner.Planner() #Plannerのインスタンス
 
-
-a = copy.deepcopy(world_state)
+# a = copy.deepcopy(world_state)
 while True: #メインループ
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
     world_state.update_state_with_sensor_data()
