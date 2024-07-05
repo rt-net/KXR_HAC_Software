@@ -44,12 +44,11 @@ class VisionLibrary:
         height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) #設定された高さを取得
         fps = self.cap.get(cv2.CAP_PROP_FPS) #設定されたFPSを取得
         print("     fourcc:{} fps:{} width:{} height:{}".format(fourcc, fps, width, height)) #取得したフォーマット、解像度、FPSを表示
+        print("[Camera initialized successfully]")
         
         #歪み補正パラメータが配置されたディレクトリパス指定
         self.MTX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tmp', "mtx.csv")
         self.DIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tmp', "dist.csv")
-        
-        print("[Camera initialized successfully]")
         
         #各要素の検出状態の初期化
         self.is_found_edge = False #フィールドのエッジが見えているかどうかのT/F
@@ -413,8 +412,6 @@ class VisionLibrary:
                 rho = line_parameter_list[:,0]
                 theta = line_parameter_list[:,1]
                 
-                print(theta_std_dev)
-                
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_list = theta
                     rho_list = rho
@@ -491,8 +488,6 @@ class VisionLibrary:
                 line_parameter_list = lines[:,0]
                 rho = line_parameter_list[:,0]
                 theta = line_parameter_list[:,1]
-                
-                print(theta_std_dev)
                 
                 if theta_std_dev < 1: #θの標準偏差が1未満である時
                     theta_list = theta
