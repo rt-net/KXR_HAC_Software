@@ -176,11 +176,15 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             self.round_corner() #コーナーを曲がる
 
     def turn_to_ball(self): #ボールに正対する
+        """turn to ball
+        """
         self.MOTION.stop_motion() #前進を終了
         self.update_distance_to_ball() #ボールとの位置関係を更新
         self.MOTION.turn(self.angle_to_ball_degrees) #ボールに正対するように旋回
         
     def walk_to_ball(self): #ボールに接近する
+        """walk to ball and adjust relative position to it
+        """
         self.update_distance_to_ball() #ボールとの位置関係を更新
         
         if self.MOTION.is_button_pressed == False: #前進中でない場合
@@ -191,11 +195,15 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             self.MOTION.walk_sideway(self.distance_to_ball_x_mm) #ボールが真正面にくるまでサイドステップ
                  
     def touch_ball(self): #ボールに触る
+        """extend arm and touch ball
+        """
         self.MOTION.stop_motion() #再生中のモーションを終了
         self.MOTION.touch_ball() #ボールに触るモーションを再生
         self.touched_ball = True #ボールに触ったかどうかのT/Fを更新
             
     def turn_to_goal(self): #ゴールラインに正対する
+        """turn to goal based on the IMU data
+        """
         self.MOTION.stop_motion() #再生中のモーションを停止
         yaw, pitch, roll = self.MOTION.get_body_angle() #現在のロボット自身の絶対角度を取得（探索開始時の角度を基準とする）
         print("[Angle to the goal : ", 180-yaw, "]") 
@@ -203,6 +211,8 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         self.facing_goal=True #ゴールに向いているかどうかのT/Fを更新
     
     def cross_goal(self): #ゴールに入る
+        """cross goal
+        """
         self.get_vision_all() #全てのカメラ情報を取得
         self.MOTION.stop_motion() #再生中のモーションを停止
         
@@ -243,6 +253,11 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
     ########## World State更新関連の関数 ##########
     
     def check_know_ball_pos(self): #ボールの位置を把握しているかどうかのT/Fを返す
+        """Return either the robot know target ball position or not
+        Returns:
+        -------
+        bool
+        """
         self.get_vision_all() #全てのカメラ情報を取得
         if self.ball_coordinate_x_wide != 0:
             return True
@@ -250,6 +265,11 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             return False
     
     def check_facing_ball(self): #ボールに正対しているかどうかのT/Fを返す
+        """Return either the robot is in front of target ball or not
+        Returns:
+        -------
+        bool
+        """
         self.get_vision_all() #全てのカメラ情報を取得
         if self.ball_coordinate_x > (parameterfile.BEV_FRAME_WIDTH_MM/2-parameterfile.BALL_POS_TOLERANCE_MM) and self.ball_coordinate_x < (parameterfile.BEV_FRAME_WIDTH_MM/2+parameterfile.BALL_POS_TOLERANCE_MM):
             return True
@@ -257,6 +277,11 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             return False
     
     def check_near_ball(self): #ボールに十分近いかどうかのT/Fを返す
+        """Return either the robot is close enough to target ball or not
+        Returns:
+        -------
+        bool
+        """
         self.VISION.calibrate_img()
         self.ball_coordinate_x, self.ball_coordinate_y = self.VISION.detect_ball()
         if self.ball_coordinate_y > parameterfile.BEV_FRAME_HEIGHT_MM-parameterfile.BALL_POS_FROM_ROBOT:
@@ -265,12 +290,27 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             return False
         
     def check_touched_ball(self): #ボールに触ったかどうかのT/Fを返す
+        """Return either the robot has touched target ball or not
+        Returns:
+        -------
+        bool
+        """
         return self.touched_ball
     
     def check_in_goal(self): #ゴールに入っているかどうかのT/Fを返す
+        """Return either the robot is in goal or not
+        Returns:
+        -------
+        bool
+        """
         return self.in_goal
     
     def check_near_goal(self): #ゴールに近いかどうかのT/Fを返す
+        """Return either the robot is close enough to goal or not
+        Returns:
+        -------
+        bool
+        """
         self.VISION.calibrate_img()
         self.goalline_angle, self.goalline_slope, self.goalline_intercept = self.VISION.detect_goal()
         if self.goalline_angle != 0 and self.goalline_slope != 0 and self.goalline_intercept != 0:
@@ -283,10 +323,22 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             return False
     
     def check_facing_goal(self): #ゴールの正面にいるかどうかのT/Fを返す
+        """Return either the robot is in front of goal or not
+        Returns:
+        -------
+        bool
+        """
         return self.facing_goal
         
     def check_standing(self): #機体が立っているかどうかのT/Fを返す
+        """Return either the robot is standing or not
+        Returns:
+        -------
+        bool
+        """
         return self.is_standing
         
+    ########## カメラ画像描画用の関数 ##########
+
     def display_image(self): 
         return self.result_image

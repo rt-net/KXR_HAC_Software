@@ -1,4 +1,4 @@
-#vision_libraryを用いたゴール検出の動作確認用（ゴールラインは白色のため、反射等で検出がうまくいかない際にはhsv閾値の調整を行う）
+#vision_libraryを用いたゴール検出の動作確認用（ゴールラインは白色のため、反射等で検出がうまくいかない際にはparameterfile.py中のhsv閾値の調整を行う）
 
 from vision.vision_library import VisionLibrary
 import cv2

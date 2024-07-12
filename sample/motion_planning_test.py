@@ -19,6 +19,6 @@ while True:
     # PLANNING.round_corner()
     # PLANNING.align_with_field_edge()
     # PLANNING.cross_goal()
-    cv2.imshow("frame3", PLANNING.display_image())
+    cv2.imshow("RESULT IMAGE", PLANNING.display_image())
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
