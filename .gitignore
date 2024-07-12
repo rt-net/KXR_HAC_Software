@@ -1,8 +1,5 @@
 __pycache__/
 *.swp
-HTN_planner_test.py
-HTN_planner_sample.py
-HTN_planner_HAC.py
 htn_test.py
 deleted_commentouts.py
 test.py
