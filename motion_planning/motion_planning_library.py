@@ -81,7 +81,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
             
             self.distance_from_the_edge_mm = (AB**2 - ((AB**2 - AC**2 +BC**2)/(2*BC))**2)**(1/2)
         except:
-            self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM #計算ができないとき（エッジが水平の時など）、デフォルトの距離を格納
+            self.distance_from_the_edge_mm = parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM #計算ができないとき（エッジが水平の時など），デフォルトの距離を格納
 
     ########## Primitive Taskにおいてロボットを動かすための関数 ##########
     
@@ -95,10 +95,10 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         
         self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジから機体の投影面積中心までの距離を計算
         
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM: #エッジとの距離が下閾値より小さい、もしくは上閾値よりも大きい時
-            if self.edge_angle > 0: #エッジのアングルが0度以上（ロボットとエッジの位置関係上、エッジが右側に存在）
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM or self.distance_from_the_edge_mm > parameterfile.WALK_PATH_TO_FIELD_EDGE_MAXIMUM_MM: #エッジとの距離が下閾値より小さい，もしくは上閾値よりも大きい時
+            if self.edge_angle > 0: #エッジのアングルが0度以上（ロボットとエッジの位置関係上，エッジが右側に存在）
                 self.MOTION.walk_sideway(-(self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM)) #サイドステップでエッジとの位置関係を閾値内に調整
-            else: #エッジのアングルが0度以下（ロボットとエッジの位置関係上、エッジが左側に存在）
+            else: #エッジのアングルが0度以下（ロボットとエッジの位置関係上，エッジが左側に存在）
                 self.MOTION.walk_sideway((self.distance_from_the_edge_mm-parameterfile.WALK_PATH_TO_FIELD_EDGE_DEFAULT_MM)) #サイドステップでエッジとの位置関係を閾値内に調整
                 
     def round_corner(self): #コーナーを曲がる
@@ -164,7 +164,7 @@ class MotionPlanningLibrary: #MotionPlanningLibraryクラス
         if self.edge_angle != 0: #エッジのアングルが0度ではないとき　→　エッジに相対しているとき
             self.calculate_distance_from_the_edge_mm(self.edge_slope, self.edge_intercept) #エッジとの距離を計算
         
-        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM: #エッジとの距離が、下閾値を下回るとき
+        if self.distance_from_the_edge_mm < parameterfile.WALK_PATH_TO_FIELD_EDGE_MINIMUM_MM: #エッジとの距離が，下閾値を下回るとき
             self.MOTION.stop_motion() #再生中のモーションを停止
             self.align_with_field_edge() #エッジとの位置関係を調整
             

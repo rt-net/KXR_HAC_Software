@@ -41,7 +41,7 @@ world_state.set_update_functions(WS_standing=check_standing,
                                  WS_touched_ball=check_touched_ball,
                                  WS_facing_goal=check_facing_goal,
                                  WS_near_goal=check_near_goal,
-                                 WS_in_goal=check_in_goal) #それぞれのworld_stateについて、更新陽の関数をセットする
+                                 WS_in_goal=check_in_goal) #それぞれのworld_stateについて，更新陽の関数をセットする
 
 ####PrimitiveTasks####
 PT_init_pos = HTN_planner.PrimitiveTask("StandUp") #HTN_planner.PrimitiveTaskクラスのインスタンス生成
@@ -108,6 +108,6 @@ planner = HTN_planner.Planner() #Plannerのインスタンス
 while True: #メインループ
     print('\n\n'+"#"*5+"  Generate Plan With History  "+"#"*5)
     world_state.update_state_with_sensor_data()
-    planner.make_plan([CT_root_task], world_state) #CT_root_taskについて、現在のworld_stateに基づいてプランを立てる
+    planner.make_plan([CT_root_task], world_state) #CT_root_taskについて，現在のworld_stateに基づいてプランを立てる
     planner.show_plan()
     planner.execute_plan(world_state) #プランを実行する

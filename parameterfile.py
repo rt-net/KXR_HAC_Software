@@ -42,7 +42,7 @@ GRAPH_Y_AXIS_MAXIMUM = 1000
 GRAPH_Y_AXIS_MINIMUM = -1000
 
 #Vision Parameters#############################################
-#動画読み込み時の解像度、FPS指定
+#動画読み込み時の解像度，FPS指定
 CAMERA_FRAME_WIDTH = 320 #幅
 CAMERA_FRAME_HEIGHT = 240 #高さ
 CAMERA_FPS = 5 #フレームレート

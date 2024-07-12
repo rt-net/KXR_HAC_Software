@@ -147,7 +147,7 @@ class Planner:
         self.working_state = copy.deepcopy(world) #引数worldからコピーした作業状態をインスタンス変数self.working_stateにする　プランニング作業中に引数のもとが更新されても基の値を保持
         
         while tasks_to_process: #tasks_to_processが存在する間
-            current_task = tasks_to_process.pop(0) #tasks_to_processの先頭の値を削除して、それをcurrent_taskに代入 pop(0)はリストの先頭を削除して持ってくる
+            current_task = tasks_to_process.pop(0) #tasks_to_processの先頭の値を削除して，それをcurrent_taskに代入 pop(0)はリストの先頭を削除して持ってくる
             if current_task.__class__.__name__ == 'CompoundTask': #__class__.__name__プロパティ属性はクラスの名前を持ってくる　これがもしCompundTaskであれば
                 for method in current_task.method_list: #現在のタスクにおけるメソッドのリストについて繰り返す
                     if self.check_task_precond(method): #そのメソッドについてpreconditionを確認 Trueが返ってきたら（working_stateと合致していたら）
