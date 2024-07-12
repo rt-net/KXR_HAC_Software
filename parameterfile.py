@@ -1,8 +1,5 @@
 import numpy as np
 import cv2
-
-import pprint
-import sys
 import os
 
 #Motion Planning Parameters###################################
