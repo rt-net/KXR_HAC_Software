@@ -208,7 +208,7 @@ class MotionLibrary:
         """Calculate current coordinate in the field by IMU based dead-reckoning
         Parameters:
         ----------
-        motion_type_or_time: char or float
+        motion_type_or_duration: char or float
                              type of motion (char)
                              time in which the motion is played (float)
         """
