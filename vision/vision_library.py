@@ -57,7 +57,12 @@ class VisionLibrary:
         self.corner_pixel_coordinate_x = 0
         self.corner_pixel_coordinate_y = 0
         
-    def calibrate_img(self):      
+    def calibrate_img(self):
+        """calibrate image using undistort and bird eye view transform
+        Returns:
+        --------
+        calibrated image data
+        """
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
         mtx, dist = load_calibration_file(self.MTX_PATH, self.DIST_PATH) #キャリブレーションパラメータ配列を得る
         frame_undistort = cv2.undistort(frame, mtx, dist, None) # パラメータを元に画像補正
@@ -77,6 +82,11 @@ class VisionLibrary:
         return self.BEV_img #歪み補正、鳥瞰図変換後の画像を返す
        
     def detect_ball(self): #ボール検出の関数
+        """detect ball and its coordinate using color identification
+        Returns:
+        --------
+        ball coordinate x, y
+        """
         frame = self.BEV_img #キャリブレーション後画像の読み込み         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
@@ -98,6 +108,12 @@ class VisionLibrary:
         return self.ball_pixel_coordinate_x, self.ball_pixel_coordinate_y #BEV画像中のボールのx,y座標を返す
     
     def detect_ball_wide(self): #ボール検出の関数（BEV画像ではなく、カメラ画像そのままの広い画角でボールを検出する）
+        """detect ball and its coordinate using color identification
+        use wide view angle
+        Returns:
+        --------
+        ball coordinate x, y
+        """
         ret, frame = self.cap.read() #カメラ画像の読み込み　画像の配列は2つめの戻り値frameに格納 retは画像が読み込めたかのbool値が入る
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.BALL_COLOR_MIN, parameterfile.BALL_COLOR_MAX) #ボール色をマスク
@@ -118,6 +134,11 @@ class VisionLibrary:
         return self.ball_pixel_coordinate_x_wide, self.ball_pixel_coordinate_y_wide #カメラ画像中のボールのx,y座標を返す    
 
     def detect_corner(self): #コーナー検出の関数
+        """detect corner and its type using pattern matching
+        Returns:
+        --------
+        corner type, coordinate x, y
+        """
         frame = self.BEV_img #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
@@ -149,6 +170,12 @@ class VisionLibrary:
         return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
     
     def detect_corner_wide(self): #コーナー検出の関数（BEV画像ではなく、カメラ画像そのままの広い画角でボールを検出する）
+        """detect corner and its type using pattern matching
+        use wide view angle
+        Returns:
+        --------
+        corner type, coordinate x, y
+        """
         ret, frame = self.cap.read()     
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask_low = cv2.inRange(hsv, parameterfile.FIELD_COLOR_MIN_LOW, parameterfile.FIELD_COLOR_MAX_LOW)   #エッジ赤線をマスク
@@ -175,100 +202,13 @@ class VisionLibrary:
             self.corner_type = "NONE"
             
         return self.corner_type, self.corner_pixel_coordinate_x, self.corner_pixel_coordinate_y #コーナー座標、種別を返す
-        
-    def display_resultimg(self):#結果画像の表示用関数
-        ret, result = self.cap.read()
-
-        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
-            cv2.rectangle(result, 
-                          (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
-                          (int(self.corner_pixel_coordinate_x)+30, int(self.corner_pixel_coordinate_y)+30), 
-                          (255, 255, 0), 2) 
-            if self.corner_type == "LEFT_WIDE":
-                cv2.putText(result,
-                            text="Left",
-                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
-            elif self.corner_type == "RIGHT_WIDE":
-                cv2.putText(result,
-                            text="Right",
-                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
-    
-        result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
-        
-        if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
-            #見えている線の合成の描画
-            cv2.line(result, 
-                    (int(self.x1_average), int(self.y1_average)), 
-                    (int(self.x2_average), int(self.y2_average)), 
-                    (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
-            
-            #線の角度(度)の画像への書き込み
-            cv2.putText(result,
-                        text=str(self.angle),
-                        org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
-                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                        fontScale=0.6,
-                        color=(0, 255, 0),
-                        thickness=2,
-                        lineType=cv2.LINE_4)
-
-        if self.is_found_ball == True:     
-            #ボール重心の描画
-            cv2.circle(result, (self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y), 4, 100, 2, 4) #ボール重心座標にマーク
-            cv2.putText(result,
-                        text=str(self.ball_pixel_coordinate_x),
-                        org=(self.ball_pixel_coordinate_x+10, self.ball_pixel_coordinate_y+10),
-                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                        fontScale=0.6,
-                        color=(0, 255, 0),
-                        thickness=2,
-                        lineType=cv2.LINE_4)
-            cv2.putText(result,
-                        text=str(self.ball_pixel_coordinate_y),
-                        org=(self.ball_pixel_coordinate_x+10, self.ball_pixel_coordinate_y+30),
-                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                        fontScale=0.6,
-                        color=(0, 255, 0),
-                        thickness=2,
-                        lineType=cv2.LINE_4)            
-            
-        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
-            cv2.rectangle(result, 
-                          (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
-                          (int(self.corner_pixel_coordinate_x)+parameterfile.CORNER_TEMPLATE_WIDTH, int(self.corner_pixel_coordinate_y)+parameterfile.CORNER_TEMPLATE_HEIGHT), 
-                          (255, 255, 0), 2) 
-            if self.corner_type == "LEFT":
-                cv2.putText(result,
-                            text="Left",
-                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
-            elif self.corner_type == "RIGHT":
-                cv2.putText(result,
-                            text="Right",
-                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.6,
-                            color=(0, 255, 0),
-                            thickness=2,
-                            lineType=cv2.LINE_4)
-                
-        return result
     
     def detect_edge_using_numpy_calc(self): #エッジ検出の関数
+        """detect field edge using numpy calculation
+        Returns:
+        --------
+        edge angle, slope, intercept
+        """
         frame = self.BEV_img #キャリブレーション後画像の読み込み
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
@@ -347,6 +287,11 @@ class VisionLibrary:
         return self.angle, self.slope, self.intercept #エッジ角度、エッジ切片を返す
     
     def detect_goal(self):
+        """detect goal using numpy calculation
+        Returns:
+        --------
+        goal angle, slope, intercept
+        """
         frame = self.BEV_img #キャリブレーション後画像の読み込み        
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #BEV図をhsv色空間へ変換
         frame_mask = cv2.inRange(hsv, parameterfile.GOAL_COLOR_MIN, parameterfile.GOAL_COLOR_MAX)   #エッジ赤線をマスク
@@ -381,7 +326,6 @@ class VisionLibrary:
             # print("rect ID:", count, "width:", w, "height", h)
             if w > 200 and w/h >= 2:
                 goal_line = True
-                # print(goal_line)
                 break
             cv2.rectangle(self.goal, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Draw rectangle with green color
             count +=1
@@ -521,3 +465,100 @@ class VisionLibrary:
                     self.ballline_angle = -(self.ballline_angle - 90)
         
         return self.ballline_angle, self.ballline_slope, self.ballline_intercept #エッジ角度、エッジ切片を返す
+    
+    def display_resultimg(self):#結果画像の表示用関数
+        """return result image
+        Returns:
+        --------
+        result image data
+        """
+        ret, result = self.cap.read()
+
+        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
+            cv2.rectangle(result, 
+                          (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
+                          (int(self.corner_pixel_coordinate_x)+30, int(self.corner_pixel_coordinate_y)+30), 
+                          (255, 255, 0), 2) 
+            if self.corner_type == "LEFT_WIDE":
+                cv2.putText(result,
+                            text="Left",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+            elif self.corner_type == "RIGHT_WIDE":
+                cv2.putText(result,
+                            text="Right",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+    
+        result = self.calibrate_img() #キャリブレーション後画像の読み込みと結果表示画像の作成
+        
+        if self.is_found_edge == True and self.corner_type == "NONE": #エッジが存在するとき　かつ　コーナーが見えていないとき(コーナーが存在するとエッジの直線近似の前提が崩れる)
+            #見えている線の合成の描画
+            cv2.line(result, 
+                    (int(self.x1_average), int(self.y1_average)), 
+                    (int(self.x2_average), int(self.y2_average)), 
+                    (0, 255, 255), thickness=2, lineType=cv2.LINE_4 )
+            
+            #線の角度(度)の画像への書き込み
+            cv2.putText(result,
+                        text=str(self.angle),
+                        org=(self.center_of_gravity_x+10, self.center_of_gravity_y+30),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)
+
+        if self.is_found_ball == True:     
+            #ボール重心の描画
+            cv2.circle(result, (self.ball_pixel_coordinate_x,self.ball_pixel_coordinate_y), 4, 100, 2, 4) #ボール重心座標にマーク
+            cv2.putText(result,
+                        text=str(self.ball_pixel_coordinate_x),
+                        org=(self.ball_pixel_coordinate_x+10, self.ball_pixel_coordinate_y+10),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)
+            cv2.putText(result,
+                        text=str(self.ball_pixel_coordinate_y),
+                        org=(self.ball_pixel_coordinate_x+10, self.ball_pixel_coordinate_y+30),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.6,
+                        color=(0, 255, 0),
+                        thickness=2,
+                        lineType=cv2.LINE_4)            
+            
+        if self.corner_type != "NONE": #コーナーが存在する時 corner_type == 0 の時は存在しない
+            cv2.rectangle(result, 
+                          (int(self.corner_pixel_coordinate_x), int(self.corner_pixel_coordinate_y)), 
+                          (int(self.corner_pixel_coordinate_x)+parameterfile.CORNER_TEMPLATE_WIDTH, int(self.corner_pixel_coordinate_y)+parameterfile.CORNER_TEMPLATE_HEIGHT), 
+                          (255, 255, 0), 2) 
+            if self.corner_type == "LEFT":
+                cv2.putText(result,
+                            text="Left",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+            elif self.corner_type == "RIGHT":
+                cv2.putText(result,
+                            text="Right",
+                            org=(int(self.corner_pixel_coordinate_x+10), int(self.corner_pixel_coordinate_y+30)),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.6,
+                            color=(0, 255, 0),
+                            thickness=2,
+                            lineType=cv2.LINE_4)
+                
+        return result

@@ -105,7 +105,12 @@ class MotionLibrary:
         self.is_button_pressed = True #ボタンの状態を更新する
         
     def walk_forward_timed(self, walk_distance):
-        """continously walk forward"""
+        """continously walk forward
+        Args:
+        ----------
+        walk_distance: int
+                       distance in mm
+        """
         self.rcb4.setKrrButtonData(Rcb4BaseLib.KRR_BUTTON.UP.value)
         time.sleep(walk_distance/parameterfile.FORWARD_1_SECOND_TRAVEL)
         self.stop_motion()
