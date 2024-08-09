@@ -11,7 +11,7 @@ from vision.vision_library import VisionLibrary
 from motion_control.motion_control_library import MotionLibrary
 import parameterfile
 
-class MotionPlanningLibrary: #MotionPlanningLibraryクラス
+class TaskExecuteLibrary: #MotionPlanningLibraryクラス
     def __init__(self):
         """initialize MotionPlanningLibrary class
         """

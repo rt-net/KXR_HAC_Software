@@ -35,8 +35,8 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
 │   └── vision_library.py
 ├── motion_control
 │   └── motion_control_library.py
-├── motion_planning
-│   └── motion_planning_library.py
+├── task_execute
+│   └── task_execute_library.py
 ├── tmp
 │   ├── dist.csv
 │   ├── left_corner_template.jpg
