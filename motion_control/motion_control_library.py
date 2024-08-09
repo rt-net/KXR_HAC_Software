@@ -6,7 +6,7 @@ import os
 import numpy as np
 import adafruit_bno055 # Adafruit製のIMU BNO055用ライブラリ
 import board
-from Rcb4BaseLib import Rcb4BaseLib #近藤科学社製RCB-4コントロールボードと通信するためのライブラリをインポート
+from motion_control.Rcb4BaseLib import Rcb4BaseLib #近藤科学社製RCB-4コントロールボードと通信するためのライブラリをインポート
 from matplotlib import pyplot as plt # グラフ描画ライブラリMatplotlibからpyplotモジュールをインポート
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # 現在のスクリプトファイルの親ディレクトリをシステムパスに追加する
