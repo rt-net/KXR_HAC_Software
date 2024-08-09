@@ -27,13 +27,13 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
 ## フォルダ構成
 <pre>
 ├── README.md
-├── Rcb4BaseLib.py
 ├── parameterfile.py
 ├── HTN_planner.py
 ├── run_HTN_planner.py
 ├── vision
 │   └── vision_library.py
 ├── motion_control
+│   ├── Rcb4BaseLib.py
 │   └── motion_control_library.py
 ├── task_execute
 │   └── task_execute_library.py
