@@ -35,8 +35,8 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
 │   └── vision_library.py
 ├── motion_control
 │   └── motion_control_library.py
-├── motion_planning
-│   └── motion_planning_library.py
+├── task_execute
+│   └── task_execute_library.py
 ├── tmp
 │   ├── dist.csv
 │   ├── left_corner_template.jpg
@@ -77,7 +77,7 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ```motion_control_library```<br>
 ロボットに歩行や起き上がりなどのモーション再生の指令を送るクラス，関数をまとめたファイルです．各モーションデータはロボット側のコントロールボード RCB-4HVが保持しています．
 ### motion_planning
-```motion_planning_library```<br>
+```task_execute_library```<br>
 画像認識結果に基づき移動などの行動を行うクラス，関数をまとめたファイルです．各行動の関数が，HTN PlannerにおけるPrimitive Taskとして扱われます．
 ### tmp
 画像認識関連のテンプレート，パラメータを格納したフォルダです．<br>
