@@ -58,9 +58,6 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
  </pre>
 
 ## ファイル説明
-```Rcb4BaseLib.py```<br>
-近藤科学社の提供する，Pythonが動作する環境からコントロールボード RCB-4HVと連携するためのライブラリです．ロボットに動作指令を送る際は，このライブラリから関数を呼び出して用います．<br>
-
 ```parameterfile.py```<br>
 画像認識，行動計画等のパラメータを一元的に格納したファイルです．<br>
 
@@ -76,6 +73,8 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ### motion_control
 ```motion_control_library```<br>
 ロボットに歩行や起き上がりなどのモーション再生の指令を送るクラス，関数をまとめたファイルです．各モーションデータはロボット側のコントロールボード RCB-4HVが保持しています．
+```Rcb4BaseLib.py```<br>
+近藤科学社の提供する，Pythonが動作する環境からコントロールボード RCB-4HVと連携するためのライブラリです．ロボットに動作指令を送る際は，このライブラリから関数を呼び出して用います．<br>
 ### task_execute
 ```task_execute_library```<br>
 画像認識結果に基づき移動などの行動を行うクラス，関数をまとめたファイルです．各行動の関数が，HTN PlannerにおけるPrimitive Taskとして扱われます．
