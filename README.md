@@ -8,7 +8,9 @@ Hierarchical Task Network（階層化型タスクネットワーク）に基づ�
 
 Humanoid Autonomous Challengeについては[こちらの記事](https://www.rt-shop.jp/blog/archives/10714)を参照してください．<br>
 
-KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Hardware](https://github.com/rt-net/KXR_HAC_Hardware.git)上で動作することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．<br>
+KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Hardware](https://github.com/rt-net/KXR_HAC_Hardware.git)上で動作することを想定しています．他のロボットハードウェアで使用する際は，動作中に呼び出すモーションやパラメータを適宜編集してください．
+
+また，[こちらの連載](https://rt-net.jp/humanoid/archives/category/developer/tsuno-two-legged)で詳細な解説を行っていますので，合わせてご参照ください．<br>
 
 ## 動作環境
 以下の環境にて動作確認を行っています．
