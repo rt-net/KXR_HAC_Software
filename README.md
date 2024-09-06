@@ -49,12 +49,23 @@ KXR-L2にRaspberryPi Zero 2W, WEBカメラ，IMUなどを増設した[KXR_HAC_Ha
 ├── HTN_sample
 │   ├── planning_library_sample.py
 │   └── run_HTN_planner_sample.py
-└── sample
-    ├── detect_goal_sample.py
-    ├── htn_test.py
-    ├── motion_control_library_sample.py
-    ├── motion_planning_test.py
-    └── vision_library_test.py
+├── sample
+│   ├── detect_goal_sample.py
+│   ├── htn_test.py
+│   ├── motion_control_library_sample.py
+│   ├── motion_planning_test.py
+│   └── vision_library_test.py
+└── HeartToHeart_project
+    ├── HAC_KXR_HTH4_project.csv
+    ├── HAC_KXR_WALK_FORWARD.xml
+    ├── HAC_KXR_WALK_LEFT.xml
+    ├── HAC_KXR_WALK_RIGHT.xml
+    ├── HAC_KXR_TURN_LEFT.xml
+    ├── HAC_KXR_TURN_RIGHT.xml
+    ├── HAC_KXR_TOUCH_BALL.xml
+    ├── HAC_KXR_STAND_UP.xml
+    └── その他，KXR-L2G_Battleのサンプルモーション
+
  </pre>
 
 ## ファイル説明
@@ -99,6 +110,11 @@ HTN_plannerを用いて，実際にロボットにHAC競技を行わせます．
 ロボットを動かさずにHTN_plannerを実行し，行動計画の流れを確認できます．<br>
 ### sample
 画像認識やモーション再生などの動作を確認するためのサンプルファイルが格納されているフォルダです．
+
+### HeartToHeart_project
+近藤科学製のモーション作成ソフト「HeartToHeart4」用のプロジェクトファイルです．
+KXR_HAC_Hardwareに合わせてモーションを編集しています．
+使用する際は，KXRに搭載されたRCB-4 miniにこのプロジェクトを書き込んでください．
 
 ## 実行方法
 1. ロボット，RaspberryPiを起動し．フィールドにロボットを配置する．
