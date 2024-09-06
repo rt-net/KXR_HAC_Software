@@ -24,13 +24,13 @@ TURN_SINGLE_STEP_ANGLE = 27#9.5#25 #旋回一回あたりの回転角度(度)
 FORWARD_1_SECOND_TRAVEL = 75 #1秒あたりの前進量
 #--------------------------------------------------------------
 #rcb4上でのモーション番号の設定
-RCB4_WALK_FORWARD = 9 #RCB4内のモーション番号　前進
-RCB4_WALK_LEFT = 11 #RCB4内のモーション番号　左横移動
-RCB4_WALK_RIGHT = 12 #RCB4内のモーション番号　右横移動
-RCB4_TOUCH_BALL = 18 #RCB4内のモーション番号　ボールタッチ
-RCB4_TURN_LEFT = 13 #RCB4内のモーション番号　左旋回
-RCB4_TURN_RIGHT = 14 #RCB4内のモーション番号　右旋回
-RCB4_STAND_UP = 15 #RCB4内のモーション番号　仰向け起き上がり
+RCB4_WALK_FORWARD = 66 #RCB4内のモーション番号　前進
+RCB4_WALK_LEFT = 67 #RCB4内のモーション番号　左横移動
+RCB4_WALK_RIGHT = 68 #RCB4内のモーション番号　右横移動
+RCB4_TURN_LEFT = 69 #RCB4内のモーション番号　左旋回
+RCB4_TURN_RIGHT = 70 #RCB4内のモーション番号　右旋回
+RCB4_TOUCH_BALL = 71 #RCB4内のモーション番号　ボールタッチ
+RCB4_STAND_UP = 72 #RCB4内のモーション番号　仰向け起き上がり
 #--------------------------------------------------------------
 ROBOT_REGULAR_PAUSE = 0.5
 ROBOT_LONG_PAUSE = 2
